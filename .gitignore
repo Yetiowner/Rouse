@@ -1,1 +1,4 @@
 flowers/
+*.zip
+mnist/
+dataset/

@@ -105,7 +105,7 @@ def showImage(image, model):
 
   
 
-images = getImages()[:700]
+images = random.sample(getImages(), 700)
 images, val_images = splitTrainVal(images, 0.5)
 print(len(images), len(val_images))
 #showSample(images, 16)
