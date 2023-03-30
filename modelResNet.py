@@ -23,7 +23,7 @@ def createModel(inputshape = (32, 32, 3), outputclasses = 10, lr = 0.001, moment
 
   # Define ResNet34 architecture
   inputs = keras.layers.Input(shape=inputshape)
-  x = keras.layers.experimental.preprocessing.Rescaling(scale=1./255)(inputs)  # Add normalization layer
+  x = keras.layers.Rescaling(scale=1./255)(inputs)  # Add normalization layer
   x = keras.layers.Conv2D(64, 7, strides=2, padding='same',
                             kernel_initializer='he_normal',
                             kernel_regularizer=keras.regularizers.l2(decay))(inputs)
