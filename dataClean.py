@@ -237,6 +237,24 @@ def trainModel(ds, val_ds):
 
   ds = ds.cache().prefetch(buffer_size=AUTOTUNE)
   val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
+
+  num_samples = 10
+
+  # Create a new dataset containing only `num_samples` elements
+  sampled_ds = ds.take(num_samples)
+
+  # Extract the images and labels using the `map()` method
+  sampled_images_ds = sampled_ds.map(lambda image, label: image)
+  sampled_labels_ds = sampled_ds.map(lambda image, label: label)
+  
+
+  # Convert the datasets to NumPy arrays
+  sampled_images = np.array(list(sampled_images_ds.as_numpy_iterator()))
+  sampled_labels = np.array(list(sampled_labels_ds.as_numpy_iterator()))
+
+  for image, label in zip(sampled_images, sampled_labels):
+    cv2_imshow('image', image)
+    print('label:', label)
   """data_augmentation = keras.Sequential(
     [
       layers.RandomFlip("horizontal",
