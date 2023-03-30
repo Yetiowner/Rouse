@@ -253,7 +253,7 @@ def trainModel(ds, val_ds):
   sampled_labels = np.array(list(sampled_labels_ds.as_numpy_iterator()))
 
   for image, label in zip(sampled_images, sampled_labels):
-    cv2_imshow('image', image)
+    cv2_imshow(image)
     print('label:', label)
   """data_augmentation = keras.Sequential(
     [
