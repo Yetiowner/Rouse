@@ -19,7 +19,7 @@ def resnet_block(inputs, num_filters, downsample=False, decay = 0.001):
     inputs = keras.layers.Activation('relu')(inputs)
     return inputs
 
-def createModel(inputshape = (32, 32, 3), outputclasses = 10, lr = 0.0001, momentum = 0.9, decay = 0.001):
+def createModel(inputshape = (32, 32, 3), outputclasses = 10, lr = 0.001, momentum = 0.9, decay = 0):
 
   # Define ResNet34 architecture
   inputs = keras.layers.Input(shape=inputshape)
