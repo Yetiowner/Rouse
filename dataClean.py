@@ -232,6 +232,7 @@ def getLabelingAccuracy(ds):
   return correct/total*100
 
 def trainModel(ds, val_ds):
+  num_classes = len(labels)
   AUTOTUNE = tf.data.AUTOTUNE
 
   ds = ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
@@ -250,7 +251,6 @@ def trainModel(ds, val_ds):
   )"""
 
 
-  num_classes = len(labels)
   
   model = modelResNet.createModel(inputshape=(HEIGHT, WIDTH, CHANNELS), outputclasses=num_classes)
 
