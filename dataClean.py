@@ -236,9 +236,7 @@ def trainModel(ds, val_ds):
   AUTOTUNE = tf.data.AUTOTUNE
 
   ds = ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
-  ds = ds.map(lambda x, y: (x, tf.one_hot(y, num_classes)))
   val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
-  val_ds = val_ds.map(lambda x, y: (x, tf.one_hot(y, num_classes)))
   """data_augmentation = keras.Sequential(
     [
       layers.RandomFlip("horizontal",
@@ -439,6 +437,8 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
 
   loading_bar = LoadingBar(verbose)
 
+  num_classes = len(labels)
+
   val_accuracy_list = []
   val_loss_list = []
   val_accuracy_list = []
@@ -458,6 +458,9 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
 
       saveSets(set1, set2, val_images)
       set1_ds, set2_ds, val_ds = load_datasets()
+      set1_ds = set1_ds.map(lambda x, y: (x, tf.one_hot(y, num_classes)))
+      set2_ds = set2_ds.map(lambda x, y: (x, tf.one_hot(y, num_classes)))
+      val_ds = val_ds.map(lambda x, y: (x, tf.one_hot(y, num_classes)))
 
       val_accuracy = "?"
       val_loss = "?"
