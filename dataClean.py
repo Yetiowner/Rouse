@@ -319,7 +319,7 @@ def saveSets(set1, set2, val_images):
 
 
 def load_datasets():
-  with redirect_stdout(None):
+  with redirect_stdout(os.devnull):
     set1_ds = tf.keras.utils.image_dataset_from_directory(
       "set1",
       seed=123,
