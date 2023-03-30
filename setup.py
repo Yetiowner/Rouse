@@ -9,12 +9,12 @@ setup(
     url='https://github.com/Yetiowner/Rouse',
     packages=find_packages(),
     install_requires=[
-        "keras==2.9.0",
-        "opencv-python==4.5.1.48",
-        "matplotlib==3.2.2",
-        "numpy==1.21.6",
-        "tensorflow==2.9.1",
-        "IPython==8.2.0"
+        "keras>=2.9.0",
+        "opencv-python>=4.5.1.48",
+        "matplotlib>=3.2.2",
+        "numpy>=1.21.6",
+        "tensorflow>=2.9.1",
+        "IPython>=8.2.0"
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
