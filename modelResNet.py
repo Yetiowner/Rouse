@@ -61,5 +61,6 @@ def createModel(inputshape = (32, 32, 3), outputclasses = 10, lr = 0.0001, momen
   # Compile model
   opt = keras.optimizers.SGD(learning_rate=lr, momentum=momentum)
   model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
-  
+  model.summary()
+
   return model
