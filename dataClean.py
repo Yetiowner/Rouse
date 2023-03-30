@@ -30,7 +30,7 @@ from google.colab.patches import cv2_imshow
 HEIGHT = 28
 WIDTH = 28
 CHANNELS = 3
-BATCH_SIZE = 64
+BATCH_SIZE = 128
 SHUFFLE_BUFFER_SIZE = 100
 TRAIN_EPOCHS = 15
 SECONDARY_EPOCHS = 5
@@ -235,7 +235,7 @@ def trainModel(ds, val_ds):
   num_classes = len(labels)
   AUTOTUNE = tf.data.AUTOTUNE
 
-  ds = ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
+  ds = ds.cache().prefetch(buffer_size=AUTOTUNE)
   val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
   """data_augmentation = keras.Sequential(
     [
@@ -260,9 +260,7 @@ def trainModel(ds, val_ds):
                                                   save_weights_only=True,
                                                   verbose=0)
 
-  es_callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)
-
-  model.fit(ds, epochs=TRAIN_EPOCHS, callbacks=[cp_callback, CustomCallback(), es_callback], verbose=0)#, validation_data=val_ds)
+  model.fit(ds, validation_data=val_ds, epochs=TRAIN_EPOCHS, callbacks=[cp_callback, CustomCallback()], verbose=1)#, validation_data=val_ds)
   model.load_weights(checkpoint_path)
   return model
 
