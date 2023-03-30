@@ -319,29 +319,30 @@ def saveSets(set1, set2, val_images):
 
 
 def load_datasets():
-  with redirect_stdout(os.devnull):
-    set1_ds = tf.keras.utils.image_dataset_from_directory(
-      "set1",
-      seed=123,
-      image_size=(HEIGHT, WIDTH),
-      batch_size=BATCH_SIZE,
-      shuffle=False,
-    )
+  with open(os.devnull, "w") as f:
+    with redirect_stdout(f):
+      set1_ds = tf.keras.utils.image_dataset_from_directory(
+        "set1",
+        seed=123,
+        image_size=(HEIGHT, WIDTH),
+        batch_size=BATCH_SIZE,
+        shuffle=False,
+      )
 
-    set2_ds = tf.keras.utils.image_dataset_from_directory(
-      "set2",
-      seed=123,
-      image_size=(HEIGHT, WIDTH),
-      shuffle=False,
-    )
+      set2_ds = tf.keras.utils.image_dataset_from_directory(
+        "set2",
+        seed=123,
+        image_size=(HEIGHT, WIDTH),
+        shuffle=False,
+      )
 
-    val_ds = tf.keras.utils.image_dataset_from_directory(
-      "val_images",
-      seed=123,
-      image_size=(HEIGHT, WIDTH),
-      batch_size=BATCH_SIZE,
-      shuffle=False,
-    )
+      val_ds = tf.keras.utils.image_dataset_from_directory(
+        "val_images",
+        seed=123,
+        image_size=(HEIGHT, WIDTH),
+        batch_size=BATCH_SIZE,
+        shuffle=False,
+      )
 
   return set1_ds, set2_ds, val_ds
 
