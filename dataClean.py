@@ -235,7 +235,9 @@ def trainModel(ds, val_ds):
   AUTOTUNE = tf.data.AUTOTUNE
 
   ds = ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
+  ds = ds.map(lambda x, y: (x, tf.one_hot(y, num_classes)))
   val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
+  val_ds = val_ds.map(lambda x, y: (x, tf.one_hot(y, num_classes)))
   """data_augmentation = keras.Sequential(
     [
       layers.RandomFlip("horizontal",
