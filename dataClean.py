@@ -14,7 +14,7 @@ import datetime
 import IPython
 from contextlib import redirect_stdout
 from matplotlib import pyplot as plt
-import modelResNet
+import Rouse.modelResNet as modelResNet
 
 from tensorflow import keras
 from tensorflow.keras import layers

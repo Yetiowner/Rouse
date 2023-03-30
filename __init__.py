@@ -1,1 +1,1 @@
-from dataClean import trainEpochs, getImages, splitTrainVal, swapLabels, MAIN_EPOCHS, displayGraph, getCorrectSample, showSample
+from Rouse.dataClean import trainEpochs, getImages, splitTrainVal, swapLabels, MAIN_EPOCHS, displayGraph, getCorrectSample, showSample
