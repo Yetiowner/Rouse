@@ -465,7 +465,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
 
   loading_bar = LoadingBar(verbose)
 
-  num_classes = len(labels)
+  num_classes = 10
 
 
   x_train, y_train, y_train_old = images
