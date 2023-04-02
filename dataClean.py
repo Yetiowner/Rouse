@@ -80,9 +80,9 @@ class LoadingBar():
     val_accuracy_str = str(format(val_accuracy, ".2f") if val_accuracy != "?" else "?").rjust(5)
     val_loss_str = str(format(val_loss, ".3f") if val_loss != "?" else "?").rjust(5)
 
-    dataset_modification_progress_dash_train = "=" * (dataset_modification_progress//(len(set2)//20)) + "." * (20 - (dataset_modification_progress//(len(set2)//20)))
-    dataset_modification_progress_str = str(min(dataset_modification_progress, len(set2))).rjust(len(str(len(set2))))
-    dataset_total_modifications_str = str(len(set2))
+    dataset_modification_progress_dash_train = "=" * (dataset_modification_progress//(len(set2[0])//20)) + "." * (20 - (dataset_modification_progress//(len(set2[0])//20)))
+    dataset_modification_progress_str = str(min(dataset_modification_progress, len(set2[0]))).rjust(len(str(len(set2[0]))))
+    dataset_total_modifications_str = str(len(set2[0]))
 
     dataset_accuracy_before_str = str(format(dataset_accuracy_before, ".2f") if dataset_accuracy_before != "?" else "?").rjust(5)
     dataset_accuracy_after_str = str(format(dataset_accuracy_after, ".2f") if dataset_accuracy_after != "?" else "?").rjust(5)
