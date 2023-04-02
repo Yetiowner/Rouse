@@ -268,6 +268,7 @@ def getLabelingAccuracy(labels, oldlabels):
   return num_matches/total*100
 
 def trainModel(ds, val_ds):
+  print(ds)
   num_classes = 10
 
   """data_augmentation = keras.Sequential(
