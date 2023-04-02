@@ -294,7 +294,7 @@ def trainModel(ds, val_ds):
                                                   save_weights_only=True,
                                                   verbose=0)
 
-  model.fit(ds, validation_data=val_ds, epochs=TRAIN_EPOCHS, callbacks=[cp_callback, CustomCallback()], verbose=1)#, validation_data=val_ds)
+  model.fit(ds[0], ds[1], validation_data=val_ds, epochs=TRAIN_EPOCHS, callbacks=[cp_callback, CustomCallback()], verbose=1)#, validation_data=val_ds)
   model.load_weights(checkpoint_path)
   return model
 
