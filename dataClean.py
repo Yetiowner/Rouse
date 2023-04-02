@@ -36,7 +36,7 @@ WIDTH = 32
 CHANNELS = 3
 BATCH_SIZE = 128
 SHUFFLE_BUFFER_SIZE = 100
-TRAIN_EPOCHS = 30
+TRAIN_EPOCHS = 120
 SECONDARY_EPOCHS = 5
 MAIN_EPOCHS = 4
 
@@ -262,7 +262,6 @@ def getClassProportion(classlist):
   return counts[1:]
 
 def getLabelingAccuracy(labels, oldlabels):
-  correct = 0
   total = len(labels)
   num_matches = np.sum(labels == oldlabels)
   return num_matches/total*100
@@ -294,7 +293,7 @@ def trainModel(ds, val_ds):
                                                   save_weights_only=True,
                                                   verbose=0)
 
-  model.fit(ds[0], ds[1], validation_data=val_ds, epochs=TRAIN_EPOCHS, callbacks=[cp_callback, CustomCallback()], verbose=1)#, validation_data=val_ds)
+  model.fit(ds[0], ds[1], validation_data=val_ds, epochs=TRAIN_EPOCHS, callbacks=[cp_callback, CustomCallback(), scheduler], verbose=1)#, validation_data=val_ds)
   model.load_weights(checkpoint_path)
   return model
 
