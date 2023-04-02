@@ -120,7 +120,7 @@ class Image():
 
 
 def scheduler(epoch, lr):
-    if epoch == 40 or epoch == 80:
+    if epoch in [2, 40, 80]:
         return lr * 0.1
     else:
         return lr
@@ -285,7 +285,7 @@ def trainModel(ds, val_ds):
 
 
   
-  model = modelResNet.createModel(inputshape=(HEIGHT, WIDTH, CHANNELS), outputclasses=num_classes)
+  model = modelResNet.createModel(inputshape=(HEIGHT, WIDTH, CHANNELS), outputclasses=num_classes, lr=1)
 
   checkpoint_path = "training_1/cp.ckpt"
   checkpoint_dir = os.path.dirname(checkpoint_path)
