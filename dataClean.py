@@ -26,7 +26,10 @@ from keras.layers import Dense, Dropout
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import mnist
 from keras.preprocessing import image
-#from google.colab.patches import cv2_imshow
+try:
+  from google.colab.patches import cv2_imshow
+except:
+  pass
 
 HEIGHT = 28
 WIDTH = 28
@@ -37,11 +40,11 @@ TRAIN_EPOCHS = 30
 SECONDARY_EPOCHS = 5
 MAIN_EPOCHS = 4
 
-if "display" not in globals():
+"""if "display" not in globals():
   def display(*args, **kwargs):
     if len(args) == 0:
       return
-    print(args[0])
+    print(args[0])"""
 if "cv2_imshow" not in globals():
   def cv2_imshow(img):
     cv2.imshow("window", img)
