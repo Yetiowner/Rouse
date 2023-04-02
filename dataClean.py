@@ -15,6 +15,7 @@ import IPython
 from contextlib import redirect_stdout
 from matplotlib import pyplot as plt
 import Rouse.modelResNet as modelResNet
+import copy
 
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -25,19 +26,25 @@ from keras.layers import Dense, Dropout
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import mnist
 from keras.preprocessing import image
-from google.colab.patches import cv2_imshow
+#from google.colab.patches import cv2_imshow
 
 HEIGHT = 28
 WIDTH = 28
 CHANNELS = 3
 BATCH_SIZE = 128
 SHUFFLE_BUFFER_SIZE = 100
-TRAIN_EPOCHS = 15
+TRAIN_EPOCHS = 30
 SECONDARY_EPOCHS = 5
 MAIN_EPOCHS = 4
 
-labels = []
-images = []
+if "display" not in globals():
+  def display(*args, **kwargs):
+    if len(args) == 0:
+      return
+    print(args[0])
+if "cv2_imshow" not in globals():
+  def cv2_imshow(img):
+    cv2.imshow("window", img)
 
 class CustomCallback(keras.callbacks.Callback):
     
@@ -107,6 +114,30 @@ class Image():
     self.filename = filename
 
 
+def scheduler(epoch, lr):
+    if epoch == 40 or epoch == 80:
+        return lr * 0.1
+    else:
+        return lr
+
+# ResNet34 architecture
+def convertToUseful(x_train, y_train, x_test, y_test):
+  mean_image = np.mean(x_train, axis=0)
+
+  # Subtract the mean from the training and test sets
+  x_train = x_train.astype(np.float32) - mean_image.astype(np.float32)
+  x_test = x_test.astype(np.float32) - mean_image.astype(np.float32)
+
+  # Data normalization
+  x_train = x_train.astype('float32') / 255.0
+  x_test = x_test.astype('float32') / 255.0
+
+  # One-hot encoding of labels
+  y_train = tf.keras.utils.to_categorical(y_train, num_classes=10)
+  y_test = tf.keras.utils.to_categorical(y_test, num_classes=10)
+
+  return (x_train, y_train), (x_test, y_test)
+
 def getImages(path = "/content/dataset/dataset"):
   global labels
   images = []
@@ -137,44 +168,49 @@ def splitTrainVal(images, split):
   set2 = [images[i] for i in complement_imageindices]
   return set1, set2
 
-def showSample(images, samplesize):
+def showSample(x_test, y_test, samplesize):
   fig = plt.figure(figsize=(12, 8))
 
   rows = math.floor(samplesize**0.5)
   columns = math.ceil(samplesize/math.floor(samplesize**0.5))
 
-  sample = random.sample(images, samplesize)
-  for index, image in enumerate(sample):
+  sample = random.sample(range(len(x_test)), samplesize)
+  for index, imageindex in enumerate(sample):
     fig.add_subplot(rows, columns, index+1)
       
     # showing image
-    plt.imshow(image.image)
+    plt.imshow(x_test[imageindex])
     plt.axis('off')
-    plt.title(image.imagename, y=-0.2)
+    plt.title(y_test[imageindex], y=-0.2)
 
   plt.show()
 
-def swapLabels(images, proportion):
-  changeimages = random.sample(list(enumerate(images)), round(len(images)*proportion))
-  changeimages.sort()
-  for index, image in changeimages:
-    oldlabel = image.imagename
-    newlabellist = labels[:]
-    newlabellist.remove(oldlabel)
+def swapLabels(labels, proportion):
+  changelabels = random.sample(list(enumerate(labels)), round(len(labels)*proportion))
+  changelabels.sort()
+  print(labels.shape)
+  labellist = list(set(labels.flatten()))
+  newlabels = copy.deepcopy(labels)
+  for index, label in changelabels:
+    oldlabel = label
+    newlabellist = labellist.copy()
+    newlabellist.remove(oldlabel.item())
     newlabel = random.choice(newlabellist)
-    image.imagename = newlabel
-    images[index] = image
-  images.sort(key = lambda x: x.imagename)
-  return images, [i[1] for i in changeimages]
+    newlabels[index] = newlabel
+  return newlabels, labels
 
-def splitBuildingSet(images, proportion):
-  imagerangelist = list(range(len(images)))
-  imageindices = random.sample(imagerangelist, int(len(imagerangelist)*proportion))
-  imageindices.sort()
-  complement_imageindices = list(set(imagerangelist) - set(imageindices))
-  complement_imageindices.sort()
-  set1 = [images[i] for i in imageindices]
-  set2 = [images[i] for i in complement_imageindices]
+def splitBuildingSet(x_train, y_train, y_train_old, proportion):
+  p = len(x_train)
+
+  # generate an array of random indices for splitting the data
+  indices = np.random.choice(p, int(proportion*p), replace=False)
+
+  # split each array into two sets using the same indices
+  x_train1, x_train2 = x_train[indices], x_train[np.setdiff1d(np.arange(p), indices)]
+  y_train1, y_train2 = y_train[indices], y_train[np.setdiff1d(np.arange(p), indices)]
+  y_train_old1, y_train_old2 = y_train_old[indices], y_train_old[np.setdiff1d(np.arange(p), indices)]
+  set1 = [x_train1, y_train1, y_train_old1]
+  set2 = [x_train2, y_train2, y_train_old2]
   return set1, set2
 
 
@@ -222,39 +258,15 @@ def getClassProportion(classlist):
   counts.append(count)
   return counts[1:]
 
-def getLabelingAccuracy(ds):
+def getLabelingAccuracy(labels, oldlabels):
   correct = 0
-  total = 0
-  for obj in ds:
-    if obj.imagename == obj.oldimagename:
-      correct += 1
-    total += 1
-  return correct/total*100
+  total = len(labels)
+  num_matches = np.sum(labels == oldlabels)
+  return num_matches/total*100
 
 def trainModel(ds, val_ds):
-  num_classes = len(labels)
-  AUTOTUNE = tf.data.AUTOTUNE
+  num_classes = 10
 
-  ds = ds.cache().prefetch(buffer_size=AUTOTUNE)
-  val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
-
-  num_samples = 10
-
-  # Create a new dataset containing only `num_samples` elements
-  sampled_ds = ds.take(num_samples)
-
-  # Extract the images and labels using the `map()` method
-  sampled_images_ds = sampled_ds.map(lambda image, label: image)
-  sampled_labels_ds = sampled_ds.map(lambda image, label: label)
-  
-
-  # Convert the datasets to NumPy arrays
-  sampled_images = np.array(list(sampled_images_ds.as_numpy_iterator()))
-  sampled_labels = np.array(list(sampled_labels_ds.as_numpy_iterator()))
-
-  for image, label in zip(sampled_images, sampled_labels):
-    cv2_imshow(image)
-    print('label:', label)
   """data_augmentation = keras.Sequential(
     [
       layers.RandomFlip("horizontal",
@@ -455,6 +467,10 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
 
   num_classes = len(labels)
 
+
+  x_train, y_train, y_train_old = images
+  x_test, y_test = val_images
+
   val_accuracy_list = []
   val_loss_list = []
   val_accuracy_list = []
@@ -465,19 +481,15 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
   total_accuracy_list = []
 
   for epoch in range(epochs):
-    set1, set2 = splitBuildingSet(images, 0.5)
+    set1, set2 = splitBuildingSet(x_train, y_train, y_train_old, 0.5)
 
     for half in range(2):
       epochtime = time.time()
       train_epoch = 0
 
-
-      saveSets(set1, set2, val_images)
-      set1_ds, set2_ds, val_ds = load_datasets()
-      set1_ds = set1_ds.map(lambda x, y: (x, tf.one_hot(y, num_classes)))
-      set2_ds = set2_ds.map(lambda x, y: (x, tf.one_hot(y, num_classes)))
-      val_ds = val_ds.map(lambda x, y: (x, tf.one_hot(y, num_classes)))
-
+      set1Encoded, val_imagesEncoded = convertToUseful(*set1[:2], x_test, y_test)
+      set2Encoded, _ = convertToUseful(*set2[:2], x_test, y_test)
+      
       val_accuracy = "?"
       val_loss = "?"
       dataset_modification_progress = 0
@@ -489,7 +501,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
 
       loading_bar.display()
 
-      model = trainModel(set1_ds, val_ds)
+      model = trainModel(set1Encoded, val_imagesEncoded)
 
 
       val_accuracy, val_loss = getAccuracy(val_ds, model)
