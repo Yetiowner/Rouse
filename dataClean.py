@@ -25,6 +25,8 @@ from keras import models
 from keras.layers import Dense, Dropout
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import mnist
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.callbacks import LearningRateScheduler
 from keras.preprocessing import image
 try:
   from google.colab.patches import cv2_imshow
@@ -293,7 +295,16 @@ def trainModel(ds, val_ds):
                                                   save_weights_only=True,
                                                   verbose=0)
 
-  model.fit(ds[0], ds[1], validation_data=val_ds, epochs=TRAIN_EPOCHS, callbacks=[cp_callback, CustomCallback(), scheduler], verbose=1)#, validation_data=val_ds)
+  datagen = ImageDataGenerator(
+    horizontal_flip=True,  # random horizontal flip
+    width_shift_range=0.2,  # randomly shift images horizontally (20% of the width)
+    height_shift_range=0.2,  # randomly shift images vertically (20% of the height)
+    fill_mode='reflect',  # reflect padding mode
+  )
+
+  train_generator = datagen.flow(*ds, batch_size=128)
+
+  model.fit(train_generator, validation_data=val_ds, epochs=TRAIN_EPOCHS, callbacks=[cp_callback, CustomCallback(), LearningRateScheduler(scheduler)], verbose=1)#, validation_data=val_ds)
   model.load_weights(checkpoint_path)
   return model
 
