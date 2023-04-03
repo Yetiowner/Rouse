@@ -38,7 +38,7 @@ WIDTH = 32
 CHANNELS = 3
 BATCH_SIZE = 128
 SHUFFLE_BUFFER_SIZE = 100
-TRAIN_EPOCHS = 120
+TRAIN_EPOCHS = 5
 SECONDARY_EPOCHS = 5
 MAIN_EPOCHS = 4
 
@@ -330,12 +330,8 @@ def load_image(img_path, show=False):
     return img_tensor
 
 def getPredictions(ds, model):
-  val_ds_unbatched = list(ds.unbatch())
-  labels = [tf.get_static_value(x[1]) for x in val_ds_unbatched]
-  images = [x[0] for x in val_ds_unbatched]
-  images = np.asarray(images)
-  predictions = predictImages(images, model)
-  return predictions, labels
+  predictions = model.predict(ds)
+  return predictions
 
 
 def getAccuracy(ds, model):
@@ -388,7 +384,7 @@ def load_datasets():
 
   return set1_ds, set2_ds, val_ds
 
-def modifySet(set2, thresh=2, thesh1=0.6):
+def modifySet(set2, predictions, truelabels, thresh=2, thesh1=0.6):
   global dataset_modification_progress
   global accuracy_increase
   global accuracy_decrease
@@ -407,17 +403,17 @@ def modifySet(set2, thresh=2, thesh1=0.6):
       loading_bar.display()
     #cv2_imshow(images[i])
     #cv2_imshow(set2[i].image)
-    idealindex = labels.index(set2[i].imagename)
+    idealindex = set2[1][i]
     scoreatindex = predictions[i][idealindex]
     scoreatindex = tf.get_static_value(scoreatindex)
     maxscore = np.max(predictions[i])
     if maxscore/thresh > scoreatindex and maxscore > thesh1:
-      newlabel = labels[np.argmax(predictions[i])]
-      if set2[i].imagename == set2[i].oldimagename:
+      newlabel = np.argmax(predictions[i])
+      if set2[1][i] == truelabels[i][0]:
         incorrectChange += 1
-      elif set2[i].oldimagename == newlabel:
+      elif truelabels[i][0] == newlabel:
         correctChange += 1
-      set2[i].imagename = newlabel
+      set2[1][i] = newlabel
   
   accuracy_increase = (correctChange/len(set2))*100
   accuracy_decrease = (incorrectChange/len(set2))*100
@@ -518,16 +514,17 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       model = trainModel(set1Encoded, val_imagesEncoded)
 
 
-      val_accuracy, val_loss = getAccuracy(val_ds, model)
+      val_accuracy, val_loss = getAccuracy(val_imagesEncoded, model)
       loading_bar.display()
 
-      predictions, truelabels = getPredictions(set2_ds, model)
+      predictions = getPredictions(set2Encoded, model)
+      truelabels = set2[2]
 
       dataset_accuracy_before = getLabelingAccuracy(set2)
       loading_bar.display()
 
       if mode == "modify":
-        set2 = modifySet(set2, thresh=2)
+        set2 = modifySet(set2, predictions, truelabels, thresh=2)
       else:
         set2 = deleteFromSet(set2, thresh=2)
       
