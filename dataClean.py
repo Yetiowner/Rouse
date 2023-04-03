@@ -529,7 +529,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       if half == 0:
         set1, set2 = swapSets(set1, set2)
       
-      total_accuracy = getLabelingAccuracy(np.concatenate([set1[1], set2[1]], axis=0), np.concatenate([set1[2], set2[2]], axis=0)])
+      total_accuracy = getLabelingAccuracy(np.concatenate([set1[1], set2[1]], axis=0), np.concatenate([set1[2], set2[2]], axis=0))
       loading_bar.display(save=True)
 
 
