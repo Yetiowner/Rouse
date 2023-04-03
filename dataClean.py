@@ -38,7 +38,7 @@ WIDTH = 32
 CHANNELS = 3
 BATCH_SIZE = 128
 SHUFFLE_BUFFER_SIZE = 100
-TRAIN_EPOCHS = 5
+TRAIN_EPOCHS = 50
 SECONDARY_EPOCHS = 5
 MAIN_EPOCHS = 4
 
@@ -456,9 +456,7 @@ def deleteFromSet(set2, thresh=2, thesh1=0.6):
   return set2
 
 def swapSets(set1, set2):
-  temp = list(set2)
-  set2 = list(set1)
-  set1 = temp
+  set1, set2 = set2, set1
   return set1, set2
 
 
@@ -527,7 +525,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       loading_bar.display()
 
       if half == 0:
-        set1, set2 = swapSets(set1, set2)
+        set1, set2 = set2, set1
       
       total_accuracy = getLabelingAccuracy(np.concatenate([set1[1], set2[1]], axis=0), np.concatenate([set1[2], set2[2]], axis=0))
       loading_bar.display(save=True)
