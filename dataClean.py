@@ -520,7 +520,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       predictions = getPredictions(set2Encoded, model)
       truelabels = set2[2]
 
-      dataset_accuracy_before = getLabelingAccuracy(set2)
+      dataset_accuracy_before = getLabelingAccuracy(set2[1], truelabels)
       loading_bar.display()
 
       if mode == "modify":
@@ -529,7 +529,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
         set2 = deleteFromSet(set2, thresh=2)
       
 
-      dataset_accuracy_after = getLabelingAccuracy(set2)
+      dataset_accuracy_after = getLabelingAccuracy(set2[1], truelabels)
       loading_bar.display()
 
       if half == 0:
