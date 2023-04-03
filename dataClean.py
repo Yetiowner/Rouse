@@ -85,9 +85,9 @@ class LoadingBar():
     val_accuracy_str = str(format(val_accuracy, ".2f") if val_accuracy != "?" else "?").rjust(5)
     val_loss_str = str(format(val_loss, ".3f") if val_loss != "?" else "?").rjust(5)
 
-    dataset_modification_progress_dash_train = "=" * (dataset_modification_progress//(len(set2[0])//20)) + "." * (20 - (dataset_modification_progress//(len(set2[0])//20)))
-    dataset_modification_progress_str = str(min(dataset_modification_progress, len(set2[0]))).rjust(len(str(len(set2[0]))))
-    dataset_total_modifications_str = str(len(set2[0]))
+    dataset_modification_progress_dash_train = "=" * (dataset_modification_progress//(len(set2[0][0])//20)) + "." * (20 - (dataset_modification_progress//(len(set2[0][0])//20)))
+    dataset_modification_progress_str = str(min(dataset_modification_progress, len(set2[0][0]))).rjust(len(str(len(set2[0][0]))))
+    dataset_total_modifications_str = str(len(set2[0][0]))
 
     dataset_accuracy_before_str = str(format(dataset_accuracy_before, ".2f") if dataset_accuracy_before != "?" else "?").rjust(5)
     dataset_accuracy_after_str = str(format(dataset_accuracy_after, ".2f") if dataset_accuracy_after != "?" else "?").rjust(5)
@@ -411,9 +411,9 @@ def modifySet(set2, predictions, truelabels, thresh=2, thesh1=0.6):
         correctChange += 1
       set2[1][i] = newlabel
   
-  accuracy_increase = (correctChange/len(set2))*100
-  accuracy_decrease = (incorrectChange/len(set2))*100
-  dataset_modification_progress = ((len(set2)//20)+1)*20
+  accuracy_increase = (correctChange/len(set2[0]))*100
+  accuracy_decrease = (incorrectChange/len(set2[0]))*100
+  dataset_modification_progress = ((len(set2[0])//20)+1)*20
   loading_bar.display()
 
   return set2
@@ -530,7 +530,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       if half == 0:
         set1, set2 = swapSets(set1, set2)
       
-      total_accuracy = getLabelingAccuracy(reorder(set1+set2))
+      total_accuracy = getLabelingAccuracy(set1[1]+set2[1], set1[2]+set2[2])
       loading_bar.display(save=True)
 
 
@@ -543,8 +543,9 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       total_accuracy_list.append(total_accuracy)
 
 
-    images = set1+set2
-    images = reorder(images)
+    x_train = set1[0]+set2[0]
+    y_train = set1[1]+set2[1]
+    y_train_old = set1[2]+set2[2]
 
   metadata = {"val accuracy": val_accuracy_list, "val loss": val_loss_list, "dataset accuracy before": dataset_accuracy_before_list, "dataset accuracy after": dataset_accuracy_after_list, "dataset correct relabelling": accuracy_increase_list, "dataset incorrect relabelling": accuracy_decrease_list, "total dataset accuracy": total_accuracy_list}
 
