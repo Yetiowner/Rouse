@@ -335,7 +335,7 @@ def getPredictions(ds, model):
 
 
 def getAccuracy(ds, model):
-  results = model.evaluate(ds, batch_size=BATCH_SIZE, verbose=0)
+  results = model.evaluate(*ds, batch_size=BATCH_SIZE, verbose=0)
   results[1] *= 100
   results = results[::-1]
   return results
