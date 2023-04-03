@@ -330,7 +330,7 @@ def load_image(img_path, show=False):
     return img_tensor
 
 def getPredictions(ds, model):
-  predictions = model.predict(*ds)
+  predictions = model.predict(ds[0])
   return predictions
 
 
