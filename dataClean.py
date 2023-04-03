@@ -85,6 +85,8 @@ class LoadingBar():
     val_accuracy_str = str(format(val_accuracy, ".2f") if val_accuracy != "?" else "?").rjust(5)
     val_loss_str = str(format(val_loss, ".3f") if val_loss != "?" else "?").rjust(5)
 
+    print(len(set2[0]))
+
     dataset_modification_progress_dash_train = "=" * (dataset_modification_progress//(len(set2[0])//20)) + "." * (20 - (dataset_modification_progress//(len(set2[0])//20)))
     dataset_modification_progress_str = str(min(dataset_modification_progress, len(set2[0]))).rjust(len(str(len(set2[0]))))
     dataset_total_modifications_str = str(len(set2[0]))
@@ -269,7 +271,6 @@ def getLabelingAccuracy(labels, oldlabels):
   return num_matches/total*100
 
 def trainModel(ds, val_ds):
-  print(ds)
   num_classes = 10
 
   """data_augmentation = keras.Sequential(
