@@ -392,7 +392,7 @@ def modifySet(set2, predictions, truelabels, thresh=2, thesh1=0.6):
   incorrectChange = 0
   correctChange = 0
 
-  for i in range(len(set2)):
+  for i in range(len(set2[0])):
     if i%(len(set2)//20) == 0:
       dataset_modification_progress = i
       loading_bar.display()
