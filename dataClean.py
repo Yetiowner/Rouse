@@ -394,6 +394,7 @@ def modifySet(set2, predictions, truelabels, thresh=2, thesh1=0.6):
 
   for i in range(len(set2[0])):
     if i%(len(set2[0])//20) == 0:
+      print(i)
       dataset_modification_progress = i
       loading_bar.display()
     #cv2_imshow(images[i])
@@ -414,7 +415,6 @@ def modifySet(set2, predictions, truelabels, thresh=2, thesh1=0.6):
   accuracy_decrease = (incorrectChange/len(set2))*100
   dataset_modification_progress = ((len(set2)//20)+1)*20
   loading_bar.display()
-  set2 = reorder(set2)
 
   return set2
 
