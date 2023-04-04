@@ -268,7 +268,7 @@ def getLabelingAccuracy(labels, oldlabels):
   num_matches = np.sum(labels == oldlabels)
   return num_matches/total*100
 
-def trainModel(ds, val_ds, epochcount = None):
+def trainModel(ds, val_ds, epochcount = None, loadingBar = True):
   num_classes = 10
 
   """data_augmentation = keras.Sequential(
@@ -303,7 +303,11 @@ def trainModel(ds, val_ds, epochcount = None):
 
   train_generator = datagen.flow(*ds, batch_size=128)
 
-  model.fit(train_generator, validation_data=val_ds, epochs=(TRAIN_EPOCHS if not epochcount else epochcount), callbacks=[cp_callback, CustomCallback(), LearningRateScheduler(scheduler)], verbose=1)#, validation_data=val_ds)
+  callbacks = [cp_callback, LearningRateScheduler(scheduler)]
+  if loadingBar:
+    callbacks.append(CustomCallback())
+
+  model.fit(train_generator, validation_data=val_ds, epochs=(TRAIN_EPOCHS if not epochcount else epochcount), callbacks=callbacks, verbose=1)#, validation_data=val_ds)
   model.load_weights(checkpoint_path)
   return model
 
@@ -463,7 +467,7 @@ def swapSets(set1, set2):
 
 def getValAccuracy(x_train, y_train, x_test, y_test):
   train_imagesEncoded, val_imagesEncoded = convertToUseful(x_train, y_train, x_test, y_test)
-  model = trainModel(train_imagesEncoded, val_imagesEncoded, epochcount=120)
+  model = trainModel(train_imagesEncoded, val_imagesEncoded, epochcount=120, loadingBar=False)
   val_accuracy, val_loss = getAccuracy(val_imagesEncoded, model)
   return val_accuracy, val_loss
 
