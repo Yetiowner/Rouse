@@ -417,7 +417,7 @@ def modifySet(set2, predictions, truelabels, thresh=2, thesh1=0.6):
 
   return set2
 
-def deleteFromSet(set2, thresh=2, thesh1=0.6):
+def deleteFromSet(set2, predictions, truelabels, thresh=2, thesh1=0.6):
   global dataset_modification_progress
   global accuracy_increase
   global accuracy_decrease
@@ -425,33 +425,35 @@ def deleteFromSet(set2, thresh=2, thesh1=0.6):
   incorrectChange = 0
   correctChange = 0
 
-  newset2 = []
+  newset2 = [[], [], []]
 
-  for i in range(len(set2)):
-    if i%(len(set2)//20) == 0:
+  for i in range(len(set2[0])):
+    if i%(len(set2[0])//20) == 0:
+      print(i)
       dataset_modification_progress = i
       loading_bar.display()
     #cv2_imshow(images[i])
     #cv2_imshow(set2[i].image)
-    idealindex = labels.index(set2[i].imagename)
+    idealindex = set2[1][i]
     scoreatindex = predictions[i][idealindex]
     scoreatindex = tf.get_static_value(scoreatindex)
     maxscore = np.max(predictions[i])
     if maxscore/thresh > scoreatindex and maxscore > thesh1:
-      if set2[i].imagename == set2[i].oldimagename:
+      if set2[1][i] == truelabels[i][0]:
         incorrectChange += 1
       else:
         correctChange += 1
     else:
-      newset2.append(set2[i])
+      newset2[0].append(set2[0][i])
+      newset2[1].append(set2[1][i])
+      newset2[2].append(set2[2][i])
   
-  set2 = newset2
-  
-  accuracy_increase = (correctChange/len(set2))*100
-  accuracy_decrease = (incorrectChange/len(set2))*100
-  dataset_modification_progress = ((len(set2)//20)+1)*20
+  set2 = tuple(copy.deepcopy(newset2))
+
+  accuracy_increase = (correctChange/len(set2[0]))*100
+  accuracy_decrease = (incorrectChange/len(set2[0]))*100
+  dataset_modification_progress = ((len(set2[0])//20)+1)*20
   loading_bar.display()
-  set2 = reorder(set2)
 
   return set2
 
@@ -518,7 +520,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       if mode == "modify":
         set2 = modifySet(set2, predictions, truelabels, thresh=2)
       else:
-        set2 = deleteFromSet(set2, thresh=2)
+        set2 = deleteFromSet(set2, predictions, truelabels, thresh=2)
       
 
       dataset_accuracy_after = getLabelingAccuracy(set2[1], truelabels)
