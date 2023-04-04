@@ -38,7 +38,7 @@ WIDTH = 32
 CHANNELS = 3
 BATCH_SIZE = 128
 SHUFFLE_BUFFER_SIZE = 100
-TRAIN_EPOCHS = 5
+TRAIN_EPOCHS = 50
 SECONDARY_EPOCHS = 5
 MAIN_EPOCHS = 4
 
@@ -521,7 +521,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
         set2 = modifySet(set2, predictions, truelabels, thresh=2)
       else:
         set2 = deleteFromSet(set2, predictions, truelabels, thresh=2)
-      
+        truelabels = set2[2]
 
       dataset_accuracy_after = getLabelingAccuracy(set2[1], truelabels)
       loading_bar.display()
