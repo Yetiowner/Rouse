@@ -448,7 +448,7 @@ def deleteFromSet(set2, predictions, truelabels, thresh=2, thesh1=0.6):
       newset2[1].append(set2[1][i])
       newset2[2].append(set2[2][i])
   
-  set2 = tuple(copy.deepcopy(newset2))
+  set2 = tuple([np.array(i) for i in newset2])
 
   accuracy_increase = (correctChange/len(set2[0]))*100
   accuracy_decrease = (incorrectChange/len(set2[0]))*100
