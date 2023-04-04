@@ -268,7 +268,7 @@ def getLabelingAccuracy(labels, oldlabels):
   num_matches = np.sum(labels == oldlabels)
   return num_matches/total*100
 
-def trainModel(ds, val_ds):
+def trainModel(ds, val_ds, epochcount = None):
   num_classes = 10
 
   """data_augmentation = keras.Sequential(
@@ -303,7 +303,7 @@ def trainModel(ds, val_ds):
 
   train_generator = datagen.flow(*ds, batch_size=128)
 
-  model.fit(train_generator, validation_data=val_ds, epochs=TRAIN_EPOCHS, callbacks=[cp_callback, CustomCallback(), LearningRateScheduler(scheduler)], verbose=1)#, validation_data=val_ds)
+  model.fit(train_generator, validation_data=val_ds, epochs=(TRAIN_EPOCHS if not epochcount else epochcount), callbacks=[cp_callback, CustomCallback(), LearningRateScheduler(scheduler)], verbose=1)#, validation_data=val_ds)
   model.load_weights(checkpoint_path)
   return model
 
@@ -461,7 +461,11 @@ def swapSets(set1, set2):
   set1, set2 = set2, set1
   return set1, set2
 
-
+def getValAccuracy(x_train, y_train, x_test, y_test):
+  train_imagesEncoded, val_imagesEncoded = convertToUseful(x_train, y_train, x_test, y_test)
+  model = trainModel(train_imagesEncoded, val_imagesEncoded, epochcount=120)
+  val_accuracy, val_loss = getAccuracy(val_imagesEncoded, model)
+  return val_accuracy, val_loss
 
 def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
 
@@ -548,7 +552,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
 
   metadata = {"val accuracy": val_accuracy_list, "val loss": val_loss_list, "dataset accuracy before": dataset_accuracy_before_list, "dataset accuracy after": dataset_accuracy_after_list, "dataset correct relabelling": accuracy_increase_list, "dataset incorrect relabelling": accuracy_decrease_list, "total dataset accuracy": total_accuracy_list}
 
-  return model, images, metadata
+  return model, (x_train, y_train, y_train_old), metadata
 
 def displayGraph(metadata):
   fig, ax = plt.subplots(figsize=(12, 8))
