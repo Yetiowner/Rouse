@@ -6,7 +6,7 @@ from tensorflow.keras.datasets import cifar10
 
 print("found", len(x_train), "images!")
 showSample(x_test, y_test, 16)
-y_train, y_train_old = swapLabels(y_train, 0.3)
+y_train, y_train_old = swapLabels(y_train, 0.4)
 
 print("Labeling accuracy at start:", getLabelingAccuracy(y_train, y_train_old))
 #showSample(changes, 16)
