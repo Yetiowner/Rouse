@@ -38,7 +38,7 @@ WIDTH = 32
 CHANNELS = 3
 BATCH_SIZE = 128
 SHUFFLE_BUFFER_SIZE = 100
-TRAIN_EPOCHS = 50
+TRAIN_EPOCHS = 42
 SECONDARY_EPOCHS = 5
 MAIN_EPOCHS = 4
 
@@ -268,7 +268,7 @@ def getLabelingAccuracy(labels, oldlabels):
   num_matches = np.sum(labels == oldlabels)
   return num_matches/total*100
 
-def trainModel(ds, val_ds, epochcount = None, loadingBar = True):
+def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
   num_classes = 10
 
   """data_augmentation = keras.Sequential(
@@ -282,9 +282,12 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True):
     ]
   )"""
 
-
+  if fast:
+    createModel = modelResNet.createFastModel
+  else:
+    createModel = modelResNet.createModel
   
-  model = modelResNet.createModel(inputshape=(HEIGHT, WIDTH, CHANNELS), outputclasses=num_classes)
+  model = createModel(inputshape=(HEIGHT, WIDTH, CHANNELS), outputclasses=num_classes)
 
   checkpoint_path = "training_1/cp.ckpt"
   checkpoint_dir = os.path.dirname(checkpoint_path)
@@ -467,7 +470,7 @@ def swapSets(set1, set2):
 
 def getValAccuracy(x_train, y_train, x_test, y_test):
   train_imagesEncoded, val_imagesEncoded = convertToUseful(x_train, y_train, x_test, y_test)
-  model = trainModel(train_imagesEncoded, val_imagesEncoded, epochcount=120, loadingBar=False)
+  model = trainModel(train_imagesEncoded, val_imagesEncoded, epochcount=120, loadingBar=False, fast=False)
   val_accuracy, val_loss = getAccuracy(val_imagesEncoded, model)
   return val_accuracy, val_loss
 
