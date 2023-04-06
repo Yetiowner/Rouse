@@ -8,7 +8,7 @@ from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import keras
 
-def createModel(inputshape = (32, 32, 3), outputclasses = 10, decay = 0.001, lr = 0.01, momentum = 0.9):
+def createModel(inputshape = (32, 32, 3), outputclasses = 10, decay = 0.0001, lr = 0.01, momentum = 0.9):
 
   inputs = Input(shape=inputshape)
   x = BatchNormalization()(inputs)
@@ -53,7 +53,7 @@ def createModel(inputshape = (32, 32, 3), outputclasses = 10, decay = 0.001, lr 
 
   return model
 
-def resnet_block(inputs, num_filters, downsample=False, decay = 0.001):
+def resnet_block(inputs, num_filters, downsample=False, decay = 0.0001):
     shortcut = inputs
     stride = 1
     if downsample:
@@ -72,7 +72,7 @@ def resnet_block(inputs, num_filters, downsample=False, decay = 0.001):
     inputs = keras.layers.Activation('relu')(inputs)
     return inputs
 
-def createFastModel(inputshape = (32, 32, 3), outputclasses = 10, decay = 0.001, lr = 0.01, momentum = 0.9):
+def createFastModel(inputshape = (32, 32, 3), outputclasses = 10, decay = 0.0001, lr = 0.01, momentum = 0.9):
 
   # Define ResNet34 architecture
   inputs = keras.layers.Input(shape=inputshape)
