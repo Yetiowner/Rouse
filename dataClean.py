@@ -39,7 +39,7 @@ WIDTH = 32
 CHANNELS = 3
 BATCH_SIZE = 128
 SHUFFLE_BUFFER_SIZE = 100
-TRAIN_EPOCHS = 42
+TRAIN_EPOCHS = 60
 SECONDARY_EPOCHS = 5
 MAIN_EPOCHS = 4
 
@@ -53,7 +53,7 @@ if "cv2_imshow" not in globals():
     cv2.imshow("window", img)
 
 class RankPruningCallback(Callback):
-    def __init__(self, x_train, y_train, train_generator, prune_every=1, prune_start=0, prune_ratio=0.2):
+    def __init__(self, x_train, y_train, train_generator, prune_every=10, prune_start=39, prune_ratio=0.1):
         super(RankPruningCallback, self).__init__()
         self.train_generator = train_generator
         self.x_train = x_train
@@ -63,21 +63,35 @@ class RankPruningCallback(Callback):
         self.prune_ratio = prune_ratio
         
     def on_epoch_end(self, epoch, logs=None):
-
+        #global y_train_old
+        
         if epoch >= self.prune_start and (epoch - self.prune_start) % self.prune_every == 0:
             # Rank the training examples based on classification confidence
-            confidence_scores = self.model.predict(self.x_train, verbose = False)
-            ranks = tf.argsort(tf.reduce_max(confidence_scores, axis=1), direction='DESCENDING')
-            
+            confidence_scores = self.model.predict(self.x_train, verbose=False, batch_size=128)
+            correct_class_scores = tf.gather_nd(confidence_scores, tf.stack([tf.range(self.y_train.shape[0]), tf.cast(tf.argmax(self.y_train, axis=1), tf.int32)], axis=1))
+            max_class_scores = tf.reduce_max(confidence_scores, axis=1)
+            confidence_ratios = correct_class_scores / max_class_scores
+            ranks = tf.argsort(confidence_ratios, direction='ASCENDING')
+
             # Prune the lowest-ranked examples
-            num_to_prune = int(self.prune_ratio * len(self.train_generator.y)) # prune the bottom X%
-            indices_to_prune = ranks[-num_to_prune:]
+            num_to_prune = int(self.prune_ratio * len(self.y_train)) # prune the bottom X%
+            indices_to_prune = ranks[:num_to_prune]
+
+            #showSample(self.x_train[indices_to_prune], self.y_train[indices_to_prune], 16)
+
 
             self.train_generator.x = np.delete(self.train_generator.x, indices_to_prune, axis=0)
             self.train_generator.y = np.delete(self.train_generator.y, indices_to_prune, axis=0)
 
             self.x_train = np.delete(self.x_train, indices_to_prune, axis=0)
             self.y_train = np.delete(self.y_train, indices_to_prune, axis=0)
+
+            """y_train_non_categorical = np.argmax(copy.deepcopy(self.y_train), axis=1).reshape((-1, 1))
+            y_train_old = np.delete(y_train_old, indices_to_prune, axis=0)
+            print("foo")
+            print(getLabelingAccuracy(y_train_old, y_train_non_categorical))
+            print("bar")"""
+
             self.train_generator.n -= num_to_prune
             self.train_generator._set_index_array()
             self.train_generator.reset()
