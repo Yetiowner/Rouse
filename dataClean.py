@@ -27,6 +27,7 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import LearningRateScheduler
+from tensorflow.keras.callbacks import Callback
 from keras.preprocessing import image
 try:
   from google.colab.patches import cv2_imshow
@@ -50,6 +51,41 @@ MAIN_EPOCHS = 4
 if "cv2_imshow" not in globals():
   def cv2_imshow(img):
     cv2.imshow("window", img)
+
+class RankPruningCallback(Callback):
+    def __init__(self, x_train, y_train, train_generator, prune_every=10, prune_start=40, prune_ratio=0.2):
+        super(RankPruningCallback, self).__init__()
+        self.train_generator = train_generator
+        self.x_train = x_train
+        self.y_train = y_train
+        self.prune_every = prune_every
+        self.prune_start = prune_start
+        self.prune_ratio = prune_ratio
+        
+    def on_epoch_end(self, epoch, logs=None):
+
+        if epoch >= self.prune_start and (epoch - self.prune_start) % self.prune_every == 0:
+            # Rank the training examples based on classification confidence
+            confidence_scores = self.model.predict(self.x_train, verbose = False)
+            ranks = tf.argsort(tf.reduce_max(confidence_scores, axis=1), direction='DESCENDING')
+            
+            # Prune the lowest-ranked examples
+            num_to_prune = int(self.prune_ratio * len(self.train_generator.y)) # prune the bottom X%
+            indices_to_prune = ranks[-num_to_prune:]
+
+            self.train_generator.x = np.delete(self.train_generator.x, indices_to_prune, axis=0)
+            self.train_generator.y = np.delete(self.train_generator.y, indices_to_prune, axis=0)
+
+            self.x_train = np.delete(self.x_train, indices_to_prune, axis=0)
+            self.y_train = np.delete(self.y_train, indices_to_prune, axis=0)
+            self.train_generator.n -= num_to_prune
+            self.train_generator._set_index_array()
+            self.train_generator.reset()
+            
+            # Update the logs
+            logs = logs or {}
+            logs['pruning_ratio'] = self.prune_ratio
+            logs['num_examples_pruned'] = num_to_prune
 
 class CustomCallback(keras.callbacks.Callback):
     
@@ -306,7 +342,7 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
 
   train_generator = datagen.flow(*ds, batch_size=128)
 
-  callbacks = [cp_callback, LearningRateScheduler(scheduler)]
+  callbacks = [cp_callback, LearningRateScheduler(scheduler), RankPruningCallback(*ds, train_generator)]
   if loadingBar:
     callbacks.append(CustomCallback())
 
