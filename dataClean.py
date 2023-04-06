@@ -53,7 +53,7 @@ if "cv2_imshow" not in globals():
     cv2.imshow("window", img)
 
 class RankPruningCallback(Callback):
-    def __init__(self, x_train, y_train, train_generator, prune_every=10, prune_start=40, prune_ratio=0.2):
+    def __init__(self, x_train, y_train, train_generator, prune_every=1, prune_start=0, prune_ratio=0.2):
         super(RankPruningCallback, self).__init__()
         self.train_generator = train_generator
         self.x_train = x_train
