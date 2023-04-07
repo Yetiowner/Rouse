@@ -337,7 +337,7 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
   else:
     createModel = modelResNet.createModel
   
-  model = createModel(inputshape=(HEIGHT, WIDTH, CHANNELS), outputclasses=num_classes)
+  model = createModel(inputshape=(HEIGHT, WIDTH, CHANNELS), outputclasses=num_classes, lr = (0.05 if fast else 0.01))
 
   checkpoint_path = "training_1/cp.ckpt"
   checkpoint_dir = os.path.dirname(checkpoint_path)
@@ -356,7 +356,7 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
 
   train_generator = datagen.flow(*ds, batch_size=128)
 
-  callbacks = [cp_callback, LearningRateScheduler(scheduler), RankPruningCallback(*ds, train_generator)]
+  callbacks = [cp_callback, LearningRateScheduler(scheduler), RankPruningCallback(*ds, train_generator, prune_ratio = (0.2 if fast else 0.1), prune_start=10)]
   if loadingBar:
     callbacks.append(CustomCallback())
 
