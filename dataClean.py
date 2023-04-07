@@ -360,7 +360,7 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
     fill_mode='reflect',  # reflect padding mode
   )
 
-  train_generator = datagen.flow(*ds, batch_size=128)
+  train_generator = datagen.flow(*ds, batch_size=(128 if not fast else 64))
 
   callbacks = [cp_callback, LearningRateScheduler(scheduler), RankPruningCallback(*ds, train_generator, prune_ratio = (0.1 if fast else 0.1), prune_start=(39 if fast else 39))]
   if loadingBar:
