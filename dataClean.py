@@ -352,7 +352,7 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
     width_shift_range=0.2,  # randomly shift images horizontally (20% of the width)
     height_shift_range=0.2,  # randomly shift images vertically (20% of the height)
     fill_mode='reflect',  # reflect padding mode
-  ) if not fast else ImageDataGenerator())
+  ))
 
   train_generator = datagen.flow(*ds, batch_size=128)
 
