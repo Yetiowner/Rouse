@@ -339,7 +339,7 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
   )"""
 
   if fast:
-    createModel = modelResNet.createFastModel
+    createModel = modelResNet.createModel
   else:
     createModel = modelResNet.createModel
   
