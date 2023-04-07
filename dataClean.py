@@ -28,6 +28,7 @@ from tensorflow.keras.datasets import mnist
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.callbacks import Callback
+from tensorflow.keras.losses import categorical_crossentropy
 from keras.preprocessing import image
 try:
   from google.colab.patches import cv2_imshow
@@ -39,7 +40,7 @@ WIDTH = 32
 CHANNELS = 3
 BATCH_SIZE = 128
 SHUFFLE_BUFFER_SIZE = 100
-TRAIN_EPOCHS = 60
+TRAIN_EPOCHS = 120
 SECONDARY_EPOCHS = 5
 MAIN_EPOCHS = 4
 
@@ -67,15 +68,20 @@ class RankPruningCallback(Callback):
         
         if epoch >= self.prune_start and (epoch - self.prune_start) % self.prune_every == 0:
             # Rank the training examples based on classification confidence
-            confidence_scores = self.model.predict(self.x_train, verbose=False, batch_size=128)
+            y_pred = self.model.predict(self.x_train)
+            y_true = self.y_train
+            losses = categorical_crossentropy(self.y_train, y_pred).numpy()
+
+
+            """confidence_scores = self.model.predict(self.x_train, verbose=False, batch_size=128)
             correct_class_scores = tf.gather_nd(confidence_scores, tf.stack([tf.range(self.y_train.shape[0]), tf.cast(tf.argmax(self.y_train, axis=1), tf.int32)], axis=1))
             max_class_scores = tf.reduce_max(confidence_scores, axis=1)
             confidence_ratios = correct_class_scores / max_class_scores
-            ranks = tf.argsort(confidence_ratios, direction='ASCENDING')
+            ranks = tf.argsort(confidence_ratios, direction='ASCENDING')"""
 
             # Prune the lowest-ranked examples
-            num_to_prune = int(self.prune_ratio * len(self.y_train)) # prune the bottom X%
-            indices_to_prune = ranks[:num_to_prune]
+            num_to_prune = int(self.prune_ratio * len(losses)) # prune the bottom X%
+            indices_to_prune = np.argsort(losses)[-num_to_prune:]
 
             #showSample(self.x_train[indices_to_prune], self.y_train[indices_to_prune], 16)
 
@@ -440,7 +446,7 @@ def load_datasets():
 
   return set1_ds, set2_ds, val_ds
 
-def modifySet(set2, predictions, truelabels, thresh=2, thesh1=0.6):
+def modifySet(set2, predictions, truelabels, thresh=3, thesh1=0.6):
   global dataset_modification_progress
   global accuracy_increase
   global accuracy_decrease
@@ -579,9 +585,9 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       loading_bar.display()
 
       if mode == "modify":
-        set2 = modifySet(set2, predictions, truelabels, thresh=2)
+        set2 = modifySet(set2, predictions, truelabels)
       else:
-        set2 = deleteFromSet(set2, predictions, truelabels, thresh=2)
+        set2 = deleteFromSet(set2, predictions, truelabels)
         truelabels = set2[2]
 
       dataset_accuracy_after = getLabelingAccuracy(set2[1], truelabels)
