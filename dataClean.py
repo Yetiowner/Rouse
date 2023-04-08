@@ -363,7 +363,7 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
 
   train_generator = datagen.flow(*ds, batch_size=(128 if not fast else 64))
 
-  callbacks = [cp_callback, LearningRateScheduler(scheduler), RankPruningCallback(*ds, train_generator, prune_ratio = (0.2 if fast else 0.1), prune_start=(19 if fast else 39))]
+  callbacks = [cp_callback, LearningRateScheduler(scheduler), RankPruningCallback(*ds, train_generator, prune_ratio = (0.2 if fast else 0.1), prune_start=(34 if fast else 39), prune_every=(5 if fast else 10))]
   if loadingBar:
     callbacks.append(CustomCallback())
 
@@ -578,7 +578,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       dataset_accuracy_before = getLabelingAccuracy(set2[1], truelabels)
       if verbose:
         showNoiseMatrix(set2[1], truelabels, title="Noise distribution matrix before modification")
-        
+
       loading_bar.display()
 
       model = trainModel(set1Encoded, val_imagesEncoded)
