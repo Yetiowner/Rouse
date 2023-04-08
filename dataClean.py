@@ -555,11 +555,13 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
   for epoch in range(epochs):
     set1, set2 = splitBuildingSet(x_train, y_train, y_train_old, 0.5)
 
+    settotrainon = set1
+
     for half in range(2):
       epochtime = time.time()
       train_epoch = 0
 
-      set1Encoded, val_imagesEncoded = convertToUseful(*set1[:2], x_test, y_test)
+      set1Encoded, val_imagesEncoded = convertToUseful(*settotrainon[:2], x_test, y_test)
       set2Encoded, _ = convertToUseful(*set2[:2], x_test, y_test)
       
       val_accuracy = "?"
@@ -589,6 +591,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
 
       predictions = getPredictions(set2Encoded, model)
 
+      settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
 
       if mode == "modify":
         set2 = modifySet(set2, predictions, truelabels)
@@ -598,7 +601,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
 
       dataset_accuracy_after = getLabelingAccuracy(set2[1], truelabels)
       if verbose:
-        showNoiseMatrix(set2[1], truelabels, title="Noise distribution matrix before modification")
+        showNoiseMatrix(set2[1], truelabels, title="Noise distribution matrix after modification")
 
       loading_bar.display()
 
