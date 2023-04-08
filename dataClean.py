@@ -573,6 +573,14 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
 
       loading_bar.display()
 
+      truelabels = set2[2]
+
+      dataset_accuracy_before = getLabelingAccuracy(set2[1], truelabels)
+      if verbose:
+        showNoiseMatrix(set2[1], truelabels, title="Noise distribution matrix before modification")
+        
+      loading_bar.display()
+
       model = trainModel(set1Encoded, val_imagesEncoded)
 
 
@@ -580,13 +588,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       loading_bar.display()
 
       predictions = getPredictions(set2Encoded, model)
-      truelabels = set2[2]
 
-      dataset_accuracy_before = getLabelingAccuracy(set2[1], truelabels)
-      if verbose:
-        showNoiseMatrix(set2[1], truelabels, title="Noise distribution matrix before modification")
-
-      loading_bar.display()
 
       if mode == "modify":
         set2 = modifySet(set2, predictions, truelabels)
