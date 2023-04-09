@@ -71,7 +71,7 @@ class RankPruningCallback(Callback):
             # Rank the training examples based on classification confidence
 
             num_to_prune = int(self.prune_ratio * len(self.x_train)) # prune the bottom X%
-            mode = "confidencescore"
+            mode = "loss"
 
             if mode == "loss":
               y_pred = self.model.predict(self.x_train)
@@ -597,18 +597,21 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
 
       predictions = getPredictions(set2Encoded, model)
 
-      settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
+      oldset2 = copy.deepcopy(set2)
+      #settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
 
       if mode == "modify":
         set2 = modifySet(set2, predictions, truelabels)
       else:
         set2 = deleteFromSet(set2, predictions, truelabels)
         truelabels = set2[2]
+      
+      settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
 
       dataset_accuracy_after = getLabelingAccuracy(set2[1], truelabels)
       if verbose:
         showNoiseMatrix(set2[1], truelabels, title="Noise distribution matrix after modification")
-        showNoiseDifferenceMatrix(settotrainon[1], set2[1], truelabels)
+        showNoiseDifferenceMatrix(oldset2[1], set2[1], truelabels)
 
       loading_bar.display()
 
