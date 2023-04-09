@@ -85,6 +85,7 @@ class RankPruningCallback(Callback):
               max_class_scores = tf.reduce_max(confidence_scores, axis=1)
               confidence_ratios = correct_class_scores / max_class_scores
               ranks = tf.argsort(confidence_ratios, direction='ASCENDING')
+              num_to_prune = min(num_to_prune, tf.math.count_nonzero(tf.math.not_equal(confidence_ratios, 1)).numpy()-1)
               indices_to_prune = ranks[:num_to_prune]
 
 
@@ -368,7 +369,7 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
 
   train_generator = datagen.flow(*ds, batch_size=(128 if not fast else 64))
 
-  callbacks = [cp_callback, LearningRateScheduler(scheduler), RankPruningCallback(*ds, train_generator, prune_ratio = (0.2 if fast else 0.2), prune_start=(34 if fast else 34), prune_every=(5 if fast else 5))]
+  callbacks = [cp_callback, LearningRateScheduler(scheduler), RankPruningCallback(*ds, train_generator, prune_ratio = (0.2 if fast else 0.1), prune_start=(34 if fast else 39), prune_every=(5 if fast else 10))]
   if loadingBar:
     callbacks.append(CustomCallback())
 
