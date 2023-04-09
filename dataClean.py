@@ -607,7 +607,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       dataset_accuracy_after = getLabelingAccuracy(set2[1], truelabels)
       if verbose:
         showNoiseMatrix(set2[1], truelabels, title="Noise distribution matrix after modification")
-        showNoiseDifferenceMatrix(set2[1], settotrainon[1], truelabels)
+        showNoiseDifferenceMatrix(settotrainon[1], set2[1], truelabels)
 
       loading_bar.display()
 
