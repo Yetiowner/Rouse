@@ -69,20 +69,25 @@ class RankPruningCallback(Callback):
         
         if epoch >= self.prune_start and (epoch - self.prune_start) % self.prune_every == 0:
             # Rank the training examples based on classification confidence
-            y_pred = self.model.predict(self.x_train)
-            y_true = self.y_train
-            losses = categorical_crossentropy(self.y_train, y_pred).numpy()
+
+            num_to_prune = int(self.prune_ratio * len(self.x_train)) # prune the bottom X%
+            mode = "confidencescore"
+
+            if mode == "loss":
+              y_pred = self.model.predict(self.x_train)
+              y_true = self.y_train
+              losses = categorical_crossentropy(self.y_train, y_pred).numpy()
+              indices_to_prune = np.argsort(losses)[-num_to_prune:]
+
+            else:
+              confidence_scores = self.model.predict(self.x_train, verbose=False, batch_size=128)
+              correct_class_scores = tf.gather_nd(confidence_scores, tf.stack([tf.range(self.y_train.shape[0]), tf.cast(tf.argmax(self.y_train, axis=1), tf.int32)], axis=1))
+              max_class_scores = tf.reduce_max(confidence_scores, axis=1)
+              confidence_ratios = correct_class_scores / max_class_scores
+              ranks = tf.argsort(confidence_ratios, direction='ASCENDING')
+              indices_to_prune = ranks[:num_to_prune]
 
 
-            """confidence_scores = self.model.predict(self.x_train, verbose=False, batch_size=128)
-            correct_class_scores = tf.gather_nd(confidence_scores, tf.stack([tf.range(self.y_train.shape[0]), tf.cast(tf.argmax(self.y_train, axis=1), tf.int32)], axis=1))
-            max_class_scores = tf.reduce_max(confidence_scores, axis=1)
-            confidence_ratios = correct_class_scores / max_class_scores
-            ranks = tf.argsort(confidence_ratios, direction='ASCENDING')"""
-
-            # Prune the lowest-ranked examples
-            num_to_prune = int(self.prune_ratio * len(losses)) # prune the bottom X%
-            indices_to_prune = np.argsort(losses)[-num_to_prune:]
 
             #showSample(self.x_train[indices_to_prune], self.y_train[indices_to_prune], 16)
 
@@ -363,7 +368,7 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
 
   train_generator = datagen.flow(*ds, batch_size=(128 if not fast else 64))
 
-  callbacks = [cp_callback, LearningRateScheduler(scheduler), RankPruningCallback(*ds, train_generator, prune_ratio = (0.2 if fast else 0.1), prune_start=(34 if fast else 39), prune_every=(5 if fast else 10))]
+  callbacks = [cp_callback, LearningRateScheduler(scheduler), RankPruningCallback(*ds, train_generator, prune_ratio = (0.2 if fast else 0.1), prune_start=(34 if fast else 34), prune_every=(5 if fast else 10))]
   if loadingBar:
     callbacks.append(CustomCallback())
 
