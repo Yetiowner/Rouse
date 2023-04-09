@@ -607,6 +607,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       dataset_accuracy_after = getLabelingAccuracy(set2[1], truelabels)
       if verbose:
         showNoiseMatrix(set2[1], truelabels, title="Noise distribution matrix after modification")
+        showNoiseDifferenceMatrix(set2[1], settotrainon[1], truelabels)
 
       loading_bar.display()
 
@@ -676,6 +677,44 @@ def showNoiseMatrix(noisy_labels, true_labels, names = NAMES, title = "Noise Dis
 
 # Compute the histogram
   hist, x_edges, y_edges = np.histogram2d(noisy_labels.flatten(), true_labels.flatten(), bins=10)
+  hist = np.log2(hist + 0.001)
+
+  # Create a new figure and axis
+  fig, ax = plt.subplots()
+
+  # Plot the histogram as a heatmap
+  im = ax.imshow(hist, cmap='viridis')
+
+  # Add a colorbar
+  cbar = ax.figure.colorbar(im, ax=ax, format=lambda x, pos: f'{int(2**x)}')
+  cbar.set_label("Relative frequency in log2 scale")
+
+  # Set the tick labels for the x-axis
+  ax.set_xticks(np.arange(len(names)))
+  ax.set_xticklabels(names)
+
+  # Set the tick labels for the y-axis
+  ax.set_yticks(np.arange(len(names)))
+  ax.set_yticklabels(names)
+
+  # Rotate the tick labels for the x-axis
+  plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+          rotation_mode="anchor")
+
+  # Set the title and axis labels
+  ax.set_title(title)
+  ax.set_xlabel("True Labels")
+  ax.set_ylabel("Noisy Labels")
+
+  # Show the plot
+  plt.show()
+
+def showNoiseDifferenceMatrix(noisy_labels, new_noisy_labels, true_labels, names = NAMES, title = "Noise difference matrix"):
+
+# Compute the histogram
+  hist, x_edges, y_edges = np.histogram2d(noisy_labels.flatten(), true_labels.flatten(), bins=10)
+  hist1, x_edges, y_edges = np.histogram2d(new_noisy_labels.flatten(), true_labels.flatten(), bins=10)
+  hist = hist1-hist
 
   # Create a new figure and axis
   fig, ax = plt.subplots()
@@ -685,6 +724,7 @@ def showNoiseMatrix(noisy_labels, true_labels, names = NAMES, title = "Noise Dis
 
   # Add a colorbar
   cbar = ax.figure.colorbar(im, ax=ax)
+  cbar.set_label("Change in frequency")
 
   # Set the tick labels for the x-axis
   ax.set_xticks(np.arange(len(names)))
