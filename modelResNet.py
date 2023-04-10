@@ -8,6 +8,11 @@ from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import keras
 
+def lq_loss(y_true, y_pred, q):
+    Lq = (1 - tf.math.pow(y_pred, q)) / q
+    loss = tf.reduce_mean(tf.reduce_sum(tf.multiply(y_true, Lq), axis=1))
+    return loss
+
 def createModel(inputshape = (32, 32, 3), outputclasses = 10, decay = 0.0001, lr = 0.01, momentum = 0.9):
 
   inputs = Input(shape=inputshape)
@@ -49,7 +54,7 @@ def createModel(inputshape = (32, 32, 3), outputclasses = 10, decay = 0.0001, lr
   optimizer = SGD(learning_rate=lr, momentum=momentum, nesterov=True)
 
   # Compile the model
-  model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+  model.compile(optimizer=optimizer, loss=lambda y_true, y_pred: lq_loss(y_true, y_pred, q=0.7), metrics=['accuracy'])
 
   return model
 
@@ -114,7 +119,7 @@ def createFastModel(inputshape = (32, 32, 3), outputclasses = 10, decay = 0.0001
 
   # Compile model
   opt = keras.optimizers.SGD(learning_rate=lr, momentum=momentum, nesterov=True)
-  model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+  model.compile(optimizer=opt, loss=lambda y_true, y_pred: lq_loss(y_true, y_pred, q=0.7), metrics=['accuracy'])
   model.summary()
 
   return model
