@@ -350,7 +350,7 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
   else:
     createModel = modelResNet.createModel
   
-  model = createModel(inputshape=(HEIGHT, WIDTH, CHANNELS), outputclasses=num_classes, lq=(False if fast else True))
+  model = createModel(inputshape=(HEIGHT, WIDTH, CHANNELS), outputclasses=num_classes, lq=(True if fast else True))
 
   checkpoint_path = "training_1/cp.ckpt"
   checkpoint_dir = os.path.dirname(checkpoint_path)
@@ -634,6 +634,8 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
     x_train = np.concatenate([set1[0], set2[0]], axis=0)
     y_train = np.concatenate([set1[1], set2[1]], axis=0)
     y_train_old = np.concatenate([set1[2], set2[2]], axis=0)
+  
+  showNoiseMatrix(y_train, y_train_old, title="Noise distribution matrix on total dataset")
 
   metadata = {"val accuracy": val_accuracy_list, "val loss": val_loss_list, "dataset accuracy before": dataset_accuracy_before_list, "dataset accuracy after": dataset_accuracy_after_list, "dataset correct relabelling": accuracy_increase_list, "dataset incorrect relabelling": accuracy_decrease_list, "total dataset accuracy": total_accuracy_list}
 
