@@ -40,7 +40,7 @@ WIDTH = 32
 CHANNELS = 3
 BATCH_SIZE = 128
 SHUFFLE_BUFFER_SIZE = 100
-TRAIN_EPOCHS = 120
+TRAIN_EPOCHS = 41
 SECONDARY_EPOCHS = 5
 MAIN_EPOCHS = 4
 NAMES = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
@@ -350,7 +350,7 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
   else:
     createModel = modelResNet.createModel
   
-  model = createModel(inputshape=(HEIGHT, WIDTH, CHANNELS), outputclasses=num_classes)
+  model = createModel(inputshape=(HEIGHT, WIDTH, CHANNELS), outputclasses=num_classes, lq=(False if fast else True))
 
   checkpoint_path = "training_1/cp.ckpt"
   checkpoint_dir = os.path.dirname(checkpoint_path)
