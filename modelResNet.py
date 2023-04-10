@@ -54,7 +54,7 @@ def createModel(inputshape = (32, 32, 3), outputclasses = 10, decay = 0.0001, lr
   optimizer = SGD(learning_rate=lr, momentum=momentum, nesterov=True)
 
   # Compile the model
-  model.compile(optimizer=optimizer, loss=lambda y_true, y_pred: lq_loss(y_true, y_pred, q=0.7) if lq else 'categorical_crossentropy', metrics=['accuracy'])
+  model.compile(optimizer=optimizer, loss=(lambda y_true, y_pred: lq_loss(y_true, y_pred, q=0.7)) if lq else 'categorical_crossentropy', metrics=['accuracy'])
 
   return model
 
@@ -119,7 +119,7 @@ def createFastModel(inputshape = (32, 32, 3), outputclasses = 10, decay = 0.0001
 
   # Compile model
   opt = keras.optimizers.SGD(learning_rate=lr, momentum=momentum, nesterov=True)
-  model.compile(optimizer=opt, loss=lambda y_true, y_pred: lq_loss(y_true, y_pred, q=0.7) if lq else 'categorical_crossentropy', metrics=['accuracy'])
+  model.compile(optimizer=opt, loss=(lambda y_true, y_pred: lq_loss(y_true, y_pred, q=0.7)) if lq else 'categorical_crossentropy', metrics=['accuracy'])
   model.summary()
 
   return model
