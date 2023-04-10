@@ -598,7 +598,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       predictions = getPredictions(set2Encoded, model)
 
       oldset2 = copy.deepcopy(set2)
-      #settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
+      settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
 
       if mode == "modify":
         set2 = modifySet(set2, predictions, truelabels)
@@ -606,7 +606,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
         set2 = deleteFromSet(set2, predictions, truelabels)
         truelabels = set2[2]
       
-      settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
+      #settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
 
       dataset_accuracy_after = getLabelingAccuracy(set2[1], truelabels)
       if verbose:
