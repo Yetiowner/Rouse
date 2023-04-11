@@ -127,7 +127,7 @@ class CustomCallback(keras.callbacks.Callback):
 
 class LoadingBar():
   def __init__(self, verbose):
-    self.structure = "| Elapsed: {} | Epoch {} | {} half epoch | Model training progress: {} {}/{} | Validation accuracy: {}% | Validation loss: {} | Dataset modification progress: {} {}/{} | Dataset half accuracy before half epoch: {}% | Dataset half accuracy after half epoch: {}% | Correct relabelling: {}% | Incorrect relabelling: {}% | Total dataset accuracy: {}% |"
+    self.structure = "| Elapsed: {} | Epoch {} | {} half epoch | Model training progress: {} {}/{} | Validation accuracy: {}% | Validation loss: {} | Dataset modification progress: {} {}/{} | Dataset half accuracy before half epoch: {}% | Dataset half accuracy after half epoch: {}% | Correct relabelling: {}% | Incorrect relabelling: {}% | Neutral relabelling: {}% | Total dataset accuracy: {}% |"
     self.out = display(display_id=True)
     self.verbose = verbose
   
@@ -156,10 +156,11 @@ class LoadingBar():
     dataset_accuracy_after_str = str(format(dataset_accuracy_after, ".2f") if dataset_accuracy_after != "?" else "?").rjust(5)
     dataset_accuracy_increase = str(format(accuracy_increase, ".2f") if accuracy_increase != "?" else "?").rjust(5)
     dataset_accuracy_decrease = str(format(accuracy_decrease, ".2f") if accuracy_decrease != "?" else "?").rjust(5)
+    dataset_accuracy_not_changed = str(format(accuracy_not_changed, ".2f") if accuracy_decrease != "?" else "?").rjust(5)
 
     total_accuracy_str = str(format(total_accuracy, ".2f") if total_accuracy != "?" else "?").rjust(5)
 
-    filledstructure = self.structure.format(time_elapsed, current_epoch, half_epoch, progress_dash_train, epoch_train, epoch_train_total, val_accuracy_str, val_loss_str, dataset_modification_progress_dash_train, dataset_modification_progress_str, dataset_total_modifications_str, dataset_accuracy_before_str, dataset_accuracy_after_str, dataset_accuracy_increase, dataset_accuracy_decrease, total_accuracy_str)
+    filledstructure = self.structure.format(time_elapsed, current_epoch, half_epoch, progress_dash_train, epoch_train, epoch_train_total, val_accuracy_str, val_loss_str, dataset_modification_progress_dash_train, dataset_modification_progress_str, dataset_total_modifications_str, dataset_accuracy_before_str, dataset_accuracy_after_str, dataset_accuracy_increase, dataset_accuracy_decrease, dataset_accuracy_not_changed, total_accuracy_str)
     maxlen = len(filledstructure)
     
     if save:
@@ -457,6 +458,7 @@ def modifySet(set2, predictions, truelabels, thresh=3, thesh1=0.6):
   global dataset_modification_progress
   global accuracy_increase
   global accuracy_decrease
+  global accuracy_not_changed
 
   incorrectChange = 0
   correctChange = 0
@@ -479,10 +481,10 @@ def modifySet(set2, predictions, truelabels, thresh=3, thesh1=0.6):
       newlabel = np.argmax(predictions[i])
       if set2[1][i] == truelabels[i][0]:
         incorrectChange += 1
+        wrongChanges.append([set2[0][i], set2[1][i], predictions[i], truelabels[i]])
       elif truelabels[i][0] == newlabel:
         correctChange += 1
-        wrongChanges.append([set2[0][i], set2[1][i], predictions[i], truelabels[i]])
-      else:
+      elif set2[1][i] != truelabels[i][0] and newlabel != truelabels[i][0]:
         neutralChange += 1
         wrongChanges.append([set2[0][i], set2[1][i], predictions[i], truelabels[i]])
       set2[1][i] = newlabel
@@ -558,7 +560,7 @@ def getValAccuracy(x_train, y_train, x_test, y_test):
 
 def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
 
-  global epoch, model, predictions, truelabels, set1, set2, half, loading_bar, epochtime, train_epoch, set1_ds, set2_ds, val_ds, val_accuracy, val_loss, dataset_modification_progress, dataset_accuracy_before, dataset_accuracy_after, accuracy_increase, accuracy_decrease, total_accuracy
+  global epoch, model, predictions, truelabels, set1, set2, half, loading_bar, epochtime, train_epoch, set1_ds, set2_ds, val_ds, val_accuracy, val_loss, dataset_modification_progress, dataset_accuracy_before, dataset_accuracy_after, accuracy_increase, accuracy_decrease, accuracy_not_changed, total_accuracy
 
   loading_bar = LoadingBar(verbose)
 
@@ -576,6 +578,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
   accuracy_increase_list = []
   accuracy_decrease_list = []
   total_accuracy_list = []
+  accuracy_not_changed_list = []
 
   for epoch in range(epochs):
     set1, set2 = splitBuildingSet(x_train, y_train, y_train_old, 0.5)
@@ -596,6 +599,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       dataset_accuracy_after = "?"
       accuracy_increase = "?"
       accuracy_decrease = "?"
+      accuracy_not_changed = "?"
       total_accuracy = "?"
 
       loading_bar.display()
@@ -647,6 +651,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       dataset_accuracy_after_list.append(dataset_accuracy_after)
       accuracy_increase_list.append(accuracy_increase)
       accuracy_decrease_list.append(accuracy_decrease)
+      accuracy_not_changed_list.append(accuracy_not_changed)
       total_accuracy_list.append(total_accuracy)
 
 
@@ -656,7 +661,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
   
   showNoiseMatrix(y_train, y_train_old, title="Noise distribution matrix on total dataset")
 
-  metadata = {"val accuracy": val_accuracy_list, "val loss": val_loss_list, "dataset accuracy before": dataset_accuracy_before_list, "dataset accuracy after": dataset_accuracy_after_list, "dataset correct relabelling": accuracy_increase_list, "dataset incorrect relabelling": accuracy_decrease_list, "total dataset accuracy": total_accuracy_list}
+  metadata = {"val accuracy": val_accuracy_list, "val loss": val_loss_list, "dataset accuracy before": dataset_accuracy_before_list, "dataset accuracy after": dataset_accuracy_after_list, "dataset correct relabelling": accuracy_increase_list, "dataset incorrect relabelling": accuracy_decrease_list, "dataset neutral relabelling": accuracy_not_changed_list, "total dataset accuracy": total_accuracy_list}
 
   return model, (x_train, y_train, y_train_old), metadata
 
