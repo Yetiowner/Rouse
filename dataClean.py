@@ -460,6 +460,9 @@ def modifySet(set2, predictions, truelabels, thresh=3, thesh1=0.6):
 
   incorrectChange = 0
   correctChange = 0
+  neutralChange = 0
+
+  wrongChanges = []
 
   for i in range(len(set2[0])):
     if i%(len(set2[0])//20) == 0:
@@ -478,10 +481,26 @@ def modifySet(set2, predictions, truelabels, thresh=3, thesh1=0.6):
         incorrectChange += 1
       elif truelabels[i][0] == newlabel:
         correctChange += 1
+        wrongChanges.append([set2[0][i], set2[1][i], predictions[i], truelabels[i]])
+      else:
+        neutralChange += 1
+        wrongChanges.append([set2[0][i], set2[1][i], predictions[i], truelabels[i]])
       set2[1][i] = newlabel
+  
+  wrongImages = random.sample(wrongChanges, 50)
+  for imageset in wrongImages:
+    print("-----------------------")
+    cv2_imshow(imageset[0])
+    print("Original noisy label:")
+    print(imageset[1])
+    print("Machine learning prediction:")
+    print(imageset[2])
+    print("Original true label:")
+    print(imageset[3])
   
   accuracy_increase = (correctChange/len(set2[0]))*100
   accuracy_decrease = (incorrectChange/len(set2[0]))*100
+  accuracy_not_changed = (neutralChange/len(set2[0]))*100
   dataset_modification_progress = ((len(set2[0])//20)+1)*20
   loading_bar.display()
 
