@@ -156,7 +156,7 @@ class LoadingBar():
     dataset_accuracy_after_str = str(format(dataset_accuracy_after, ".2f") if dataset_accuracy_after != "?" else "?").rjust(5)
     dataset_accuracy_increase = str(format(accuracy_increase, ".2f") if accuracy_increase != "?" else "?").rjust(5)
     dataset_accuracy_decrease = str(format(accuracy_decrease, ".2f") if accuracy_decrease != "?" else "?").rjust(5)
-    dataset_accuracy_not_changed = str(format(accuracy_not_changed, ".2f") if accuracy_decrease != "?" else "?").rjust(5)
+    dataset_accuracy_not_changed = str(format(accuracy_not_changed, ".2f") if accuracy_not_changed != "?" else "?").rjust(5)
 
     total_accuracy_str = str(format(total_accuracy, ".2f") if total_accuracy != "?" else "?").rjust(5)
 
