@@ -399,8 +399,34 @@ def load_image(img_path, show=False):
 
     return img_tensor
 
-def getPredictions(ds, model):
-  predictions = model.predict(ds[0])
+def getPredictions(ds, model, augmentationForModification):
+  if augmentationForModification != -1:
+    images = ds[0]
+    datagen = ImageDataGenerator(
+      horizontal_flip=True,  # random horizontal flip
+      width_shift_range=0.2,  # randomly shift images horizontally (20% of the width)
+      height_shift_range=0.2,  # randomly shift images vertically (20% of the height)
+      fill_mode='reflect',  # reflect padding mode
+    )
+
+    n = augmentationForModification
+
+    # Create a list to store the versions of images
+    augmented_images = []
+
+    # Generate n versions of the images array
+    for i in range(n):
+        # Generate random variations of the images using datagen.flow()
+        batch = datagen.flow(images, batch_size=len(images), shuffle=False).next()
+        # Add the generated variations to the list
+        augmented_images.append(batch)
+    
+    predictions = []
+    for i in augmented_images:
+      predictions.append(model.predict(i))
+
+  else:
+    predictions = model.predict(ds[0])
   return predictions
 
 
@@ -508,7 +534,7 @@ def modifySet(set2, predictions, truelabels, thresh=3, thesh1=0.6):
 
   return set2
 
-def deleteFromSet(set2, predictions, truelabels, thresh=2, thesh1=0.6):
+def deleteFromSet(set2, predictions, truelabels, augmentationForModification, thresh=2, thesh1=0.6):
   global dataset_modification_progress
   global accuracy_increase
   global accuracy_decrease
@@ -525,11 +551,27 @@ def deleteFromSet(set2, predictions, truelabels, thresh=2, thesh1=0.6):
       loading_bar.display()
     #cv2_imshow(images[i])
     #cv2_imshow(set2[i].image)
-    idealindex = set2[1][i]
-    scoreatindex = predictions[i][idealindex]
-    scoreatindex = tf.get_static_value(scoreatindex)
-    maxscore = np.max(predictions[i])
-    if maxscore/thresh > scoreatindex and maxscore > thesh1:
+
+    if augmentationForModification == -1:
+      idealindex = set2[1][i]
+      scoreatindex = predictions[i][idealindex]
+      scoreatindex = tf.get_static_value(scoreatindex)
+      maxscore = np.max(predictions[i])
+      removalCondition = maxscore/thresh > scoreatindex and maxscore > thesh1
+    else:
+      conditionsMetCount = 0
+
+      for predictionset in predictions:
+        idealindex = set2[1][i]
+        scoreatindex = predictionset[i][idealindex]
+        scoreatindex = tf.get_static_value(scoreatindex)
+        maxscore = np.max(predictionset[i])
+        if maxscore/thresh > scoreatindex and maxscore > thesh1:
+          conditionsMetCount += 1
+      
+      removalCondition = conditionsMetCount > augmentationForModification*0.75
+
+    if removalCondition:
       if set2[1][i] == truelabels[i][0]:
         incorrectChange += 1
       else:
@@ -558,7 +600,7 @@ def getValAccuracy(x_train, y_train, x_test, y_test):
   val_accuracy, val_loss = getAccuracy(val_imagesEncoded, model)
   return val_accuracy, val_loss
 
-def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
+def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentationForModification=-1):
 
   global epoch, model, predictions, truelabels, set1, set2, half, loading_bar, epochtime, train_epoch, set1_ds, set2_ds, val_ds, val_accuracy, val_loss, dataset_modification_progress, dataset_accuracy_before, dataset_accuracy_after, accuracy_increase, accuracy_decrease, accuracy_not_changed, total_accuracy
 
@@ -620,15 +662,15 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
       val_accuracy, val_loss = getAccuracy(val_imagesEncoded, model)
       loading_bar.display()
 
-      predictions = getPredictions(set2Encoded, model)
+      predictions = getPredictions(set2Encoded, model, augmentationForModification)
 
       oldset2 = copy.deepcopy(set2)
       settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
 
       if mode == "modify":
-        set2 = modifySet(set2, predictions, truelabels)
+        set2 = modifySet(set2, predictions, truelabels, augmentationForModification)
       else:
-        set2 = deleteFromSet(set2, predictions, truelabels)
+        set2 = deleteFromSet(set2, predictions, truelabels, augmentationForModification)
         truelabels = set2[2]
       
       #settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
