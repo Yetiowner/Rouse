@@ -40,9 +40,9 @@ WIDTH = 32
 CHANNELS = 3
 BATCH_SIZE = 128
 SHUFFLE_BUFFER_SIZE = 100
-TRAIN_EPOCHS = 10
+TRAIN_EPOCHS = 41
 SECONDARY_EPOCHS = 5
-MAIN_EPOCHS = 41
+MAIN_EPOCHS = 4
 NAMES = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 
 """if "display" not in globals():
