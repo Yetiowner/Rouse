@@ -420,6 +420,10 @@ def getPredictions(ds, model, augmentationForModification):
         batch = datagen.flow(images, batch_size=len(images), shuffle=False).next()
         # Add the generated variations to the list
         augmented_images.append(batch)
+
+    for i in range(50):
+      for j in range(10):
+        cv2_imshow(augmented_images[j][random.randint(0, len(images)-1)])
     
     predictions = []
     for i in augmented_images:
