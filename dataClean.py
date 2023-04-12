@@ -422,8 +422,9 @@ def getPredictions(ds, model, augmentationForModification):
         augmented_images.append(batch)
 
     for i in range(50):
+      index = random.randint(0, len(images)-1)
       for j in range(augmentationForModification):
-        cv2_imshow(augmented_images[j][random.randint(0, len(images)-1)]*255)
+        cv2_imshow(augmented_images[j][index]*255)
     
     predictions = []
     for i in augmented_images:
