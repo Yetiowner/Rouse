@@ -574,7 +574,7 @@ def deleteFromSet(set2, predictions, truelabels, augmentationForModification, th
         if maxscore/thresh > scoreatindex and maxscore > thesh1:
           conditionsMetCount += 1
       
-      removalCondition = conditionsMetCount > augmentationForModification*0.75
+      removalCondition = conditionsMetCount > augmentationForModification*0.5
 
     if removalCondition:
       if set2[1][i] == truelabels[i][0]:
