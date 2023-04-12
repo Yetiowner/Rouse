@@ -351,7 +351,7 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
   else:
     createModel = modelResNet.createModel
   
-  model = createModel(inputshape=(HEIGHT, WIDTH, CHANNELS), outputclasses=num_classes, lq=(True if fast else True))
+  model = createModel(inputshape=(HEIGHT, WIDTH, CHANNELS), outputclasses=num_classes, lq=(0.7 if fast else 0.4))
 
   checkpoint_path = "training_1/cp.ckpt"
   checkpoint_dir = os.path.dirname(checkpoint_path)
