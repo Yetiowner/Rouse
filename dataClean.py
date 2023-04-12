@@ -42,7 +42,7 @@ BATCH_SIZE = 128
 SHUFFLE_BUFFER_SIZE = 100
 TRAIN_EPOCHS = 10
 SECONDARY_EPOCHS = 5
-MAIN_EPOCHS = 4
+MAIN_EPOCHS = 41
 NAMES = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 
 """if "display" not in globals():
@@ -421,10 +421,10 @@ def getPredictions(ds, model, augmentationForModification):
         # Add the generated variations to the list
         augmented_images.append(batch)
 
-    for i in range(50):
+    """for i in range(50):
       index = random.randint(0, len(images)-1)
       for j in range(augmentationForModification):
-        cv2_imshow(augmented_images[j][index]*255)
+        cv2_imshow(augmented_images[j][index]*255)"""
     
     predictions = []
     for i in augmented_images:
