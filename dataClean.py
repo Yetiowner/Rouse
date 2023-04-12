@@ -370,7 +370,7 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
 
   train_generator = datagen.flow(*ds, batch_size=(128 if not fast else 64))
 
-  callbacks = [cp_callback, LearningRateScheduler(scheduler), RankPruningCallback(*ds, train_generator, prune_ratio = (0.2 if fast else 0.2), prune_start=(34 if fast else 34), prune_every=(5 if fast else 5))]
+  callbacks = [cp_callback, LearningRateScheduler(scheduler), RankPruningCallback(*ds, train_generator, prune_ratio = (0.1 if fast else 0.1), prune_start=(39 if fast else 39), prune_every=(10 if fast else 10))]
   if loadingBar:
     callbacks.append(CustomCallback())
 
