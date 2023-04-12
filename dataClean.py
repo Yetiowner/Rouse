@@ -580,6 +580,8 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
   total_accuracy_list = []
   accuracy_not_changed_list = []
 
+  showNoiseMatrix(y_train, y_train_old, title="Noise distribution matrix on total dataset at the start")
+
   for epoch in range(epochs):
     set1, set2 = splitBuildingSet(x_train, y_train, y_train_old, 0.5)
 
@@ -633,8 +635,8 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify"):
 
       dataset_accuracy_after = getLabelingAccuracy(set2[1], truelabels)
       if verbose:
-        showNoiseMatrix(set2[1], truelabels, title="Noise distribution matrix after modification")
-        showNoiseDifferenceMatrix(oldset2[1], set2[1], truelabels)
+        showNoiseMatrix(set2[1], truelabels, title="Noise distribution matrix after modification at the end")
+        showNoiseDifferenceMatrix(oldset2[1], set2[1], oldset2[2], truelabels)
 
       loading_bar.display()
 
@@ -739,11 +741,11 @@ def showNoiseMatrix(noisy_labels, true_labels, names = NAMES, title = "Noise Dis
   # Show the plot
   plt.show()
 
-def showNoiseDifferenceMatrix(noisy_labels, new_noisy_labels, true_labels, names = NAMES, title = "Noise difference matrix"):
+def showNoiseDifferenceMatrix(noisy_labels, new_noisy_labels, true_labels, new_true_labels, names = NAMES, title = "Noise difference matrix"):
 
 # Compute the histogram
   hist, x_edges, y_edges = np.histogram2d(noisy_labels.flatten(), true_labels.flatten(), bins=10)
-  hist1, x_edges, y_edges = np.histogram2d(new_noisy_labels.flatten(), true_labels.flatten(), bins=10)
+  hist1, x_edges, y_edges = np.histogram2d(new_noisy_labels.flatten(), new_true_labels.flatten(), bins=10)
   hist = hist1-hist
 
   # Create a new figure and axis
