@@ -356,7 +356,7 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
   else:
     createModel = modelResNet.createModel
   
-  model = createModel(inputshape=(HEIGHT, WIDTH, CHANNELS), outputclasses=num_classes, lq=(0.4 if fast else 0.4))
+  model = createModel(inputshape=(HEIGHT, WIDTH, CHANNELS), outputclasses=num_classes, lq=(0.7 if fast else 0.7))
 
   checkpoint_path = "training_1/cp.ckpt"
   checkpoint_dir = os.path.dirname(checkpoint_path)
@@ -708,7 +708,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentati
         truelabels = set2[2]
       
       if not saveOtherPartBeforeChanges:
-        settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
+        settotrainon = copy.deepcopy(set2) # This means that biases are fed forward
 
       dataset_accuracy_after = getLabelingAccuracy(set2[1], truelabels)
       if verbose:
