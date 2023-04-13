@@ -534,8 +534,6 @@ def modifySet(set2, predictions, truelabels, augmentationForModification, thresh
       for predictionset in predictions:
         maxlabels.append(np.argmax(predictionset[i]))
       
-      print(maxlabels)
-      
       newlabel = most_common(maxlabels)
 
     if removalCondition:
