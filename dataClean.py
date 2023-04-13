@@ -16,6 +16,7 @@ from contextlib import redirect_stdout
 from matplotlib import pyplot as plt
 import Rouse.modelResNet as modelResNet
 import copy
+from collections import Counter
 
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -40,7 +41,7 @@ WIDTH = 32
 CHANNELS = 3
 BATCH_SIZE = 128
 SHUFFLE_BUFFER_SIZE = 100
-TRAIN_EPOCHS = 41
+TRAIN_EPOCHS = 5
 SECONDARY_EPOCHS = 5
 MAIN_EPOCHS = 4
 NAMES = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
@@ -226,6 +227,10 @@ def getImages(path = "/content/dataset/dataset"):
       except:
         print("Failed at" + filename)
   return images
+
+def most_common(lst):
+    data = Counter(lst)
+    return data.most_common(1)[0][0]
 
 def splitTrainVal(images, split):
   imagerangelist = list(range(len(images)))
@@ -485,7 +490,7 @@ def load_datasets():
 
   return set1_ds, set2_ds, val_ds
 
-def modifySet(set2, predictions, truelabels, thresh=3, thesh1=0.6):
+def modifySet(set2, predictions, truelabels, augmentationForModification, thresh=3, thesh1=0.6):
   global dataset_modification_progress
   global accuracy_increase
   global accuracy_decrease
@@ -504,23 +509,47 @@ def modifySet(set2, predictions, truelabels, thresh=3, thesh1=0.6):
       loading_bar.display()
     #cv2_imshow(images[i])
     #cv2_imshow(set2[i].image)
-    idealindex = set2[1][i]
-    scoreatindex = predictions[i][idealindex]
-    scoreatindex = tf.get_static_value(scoreatindex)
-    maxscore = np.max(predictions[i])
-    if maxscore/thresh > scoreatindex and maxscore > thesh1:
+
+    if augmentationForModification == -1:
+      idealindex = set2[1][i]
+      scoreatindex = predictions[i][idealindex]
+      scoreatindex = tf.get_static_value(scoreatindex)
+      maxscore = np.max(predictions[i])
       newlabel = np.argmax(predictions[i])
+      removalCondition = maxscore/thresh > scoreatindex and maxscore > thesh1
+    else:
+      conditionsMetCount = 0
+
+      for predictionset in predictions:
+        idealindex = set2[1][i]
+        scoreatindex = predictionset[i][idealindex]
+        scoreatindex = tf.get_static_value(scoreatindex)
+        maxscore = np.max(predictionset[i])
+        if maxscore/thresh > scoreatindex and maxscore > thesh1:
+          conditionsMetCount += 1
+      
+      removalCondition = conditionsMetCount > augmentationForModification*0.7
+
+      maxlabels = []
+      for predictionset in predictions:
+        maxlabels.append(np.argmax(predictionset[i]))
+      
+      print(maxlabels)
+      
+      newlabel = most_common(maxlabels)
+
+    if removalCondition:
       if set2[1][i] == truelabels[i][0]:
         incorrectChange += 1
-        wrongChanges.append([set2[0][i], set2[1][i], predictions[i], truelabels[i]])
+        #wrongChanges.append([set2[0][i], set2[1][i], predictions[i], truelabels[i]])
       elif truelabels[i][0] == newlabel:
         correctChange += 1
       elif set2[1][i] != truelabels[i][0] and newlabel != truelabels[i][0]:
         neutralChange += 1
-        wrongChanges.append([set2[0][i], set2[1][i], predictions[i], truelabels[i]])
+        #wrongChanges.append([set2[0][i], set2[1][i], predictions[i], truelabels[i]])
       set2[1][i] = newlabel
   
-  wrongImages = random.sample(wrongChanges, 50)
+  """wrongImages = random.sample(wrongChanges, 50)
   for imageset in wrongImages:
     print("-----------------------")
     cv2_imshow(imageset[0])
@@ -529,7 +558,7 @@ def modifySet(set2, predictions, truelabels, thresh=3, thesh1=0.6):
     print("Machine learning prediction:")
     print(imageset[2])
     print("Original true label:")
-    print(imageset[3])
+    print(imageset[3])"""
   
   accuracy_increase = (correctChange/len(set2[0]))*100
   accuracy_decrease = (incorrectChange/len(set2[0]))*100
