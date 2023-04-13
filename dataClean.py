@@ -528,7 +528,7 @@ def modifySet(set2, predictions, truelabels, augmentationForModification, thresh
         if maxscore/thresh > scoreatindex and maxscore > thesh1:
           conditionsMetCount += 1
       
-      removalCondition = conditionsMetCount > augmentationForModification*0.7
+      removalCondition = conditionsMetCount > augmentationForModification*0.5
 
       maxlabels = []
       for predictionset in predictions:
