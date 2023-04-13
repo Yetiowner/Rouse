@@ -528,7 +528,7 @@ def modifySet(set2, predictions, truelabels, augmentationForModification, thresh
         if maxscore/thresh > scoreatindex and maxscore > thesh1:
           conditionsMetCount += 1
       
-      removalCondition = conditionsMetCount > augmentationForModification*0.5
+      removalCondition = conditionsMetCount > augmentationForModification*0.7
 
       maxlabels = []
       for predictionset in predictions:
@@ -632,7 +632,7 @@ def getValAccuracy(x_train, y_train, x_test, y_test):
   val_accuracy, val_loss = getAccuracy(val_imagesEncoded, model)
   return val_accuracy, val_loss
 
-def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentationForModification=-1):
+def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentationForModification=-1, saveOtherPartBeforeChanges = True):
 
   global epoch, model, predictions, truelabels, set1, set2, half, loading_bar, epochtime, train_epoch, set1_ds, set2_ds, val_ds, val_accuracy, val_loss, dataset_modification_progress, dataset_accuracy_before, dataset_accuracy_after, accuracy_increase, accuracy_decrease, accuracy_not_changed, total_accuracy
 
@@ -697,7 +697,9 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentati
       predictions = getPredictions(set2Encoded, model, augmentationForModification)
 
       oldset2 = copy.deepcopy(set2)
-      settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
+
+      if saveOtherPartBeforeChanges:
+        settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
 
       if mode == "modify":
         set2 = modifySet(set2, predictions, truelabels, augmentationForModification)
@@ -705,7 +707,8 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentati
         set2 = deleteFromSet(set2, predictions, truelabels, augmentationForModification)
         truelabels = set2[2]
       
-      #settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
+      if not saveOtherPartBeforeChanges:
+        settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
 
       dataset_accuracy_after = getLabelingAccuracy(set2[1], truelabels)
       if verbose:
