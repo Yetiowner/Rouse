@@ -518,7 +518,7 @@ def modifySet(set2, predictions, truelabels, augmentationForModification, thresh
       newlabel = np.argmax(predictions[i])
       removalCondition = maxscore/thresh > scoreatindex and maxscore > thesh1
     else:
-      """conditionsMetCount = 0
+      conditionsMetCount = 0
 
       for predictionset in predictions:
         idealindex = set2[1][i]
@@ -528,14 +528,14 @@ def modifySet(set2, predictions, truelabels, augmentationForModification, thresh
         if maxscore/thresh > scoreatindex and maxscore > thesh1:
           conditionsMetCount += 1
       
-      removalCondition = conditionsMetCount > augmentationForModification*0.7"""
+      removalCondition = conditionsMetCount > augmentationForModification*0.7
 
       maxlabels = []
       for predictionset in predictions:
         maxlabels.append(np.argmax(predictionset[i]))
       
       newlabel = most_common(maxlabels)
-      removalCondition = (set2[1][i] != newlabel)
+      #removalCondition = (set2[1][i] != newlabel)
 
     if removalCondition:
       if set2[1][i] == truelabels[i][0]:
