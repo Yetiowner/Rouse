@@ -41,7 +41,7 @@ WIDTH = 32
 CHANNELS = 3
 BATCH_SIZE = 128
 SHUFFLE_BUFFER_SIZE = 100
-TRAIN_EPOCHS = 41
+TRAIN_EPOCHS = 5
 SECONDARY_EPOCHS = 5
 MAIN_EPOCHS = 4
 NAMES = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
@@ -366,12 +366,12 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True):
                                                   save_weights_only=True,
                                                   verbose=0)
 
-  datagen = (ImageDataGenerator(
+  datagen = ImageDataGenerator(
     horizontal_flip=True,  # random horizontal flip
-    width_shift_range=0.2,  # randomly shift images horizontally (20% of the width)
-    height_shift_range=0.2,  # randomly shift images vertically (20% of the height)
+    width_shift_range=4,  # randomly shift images horizontally (20% of the width)
+    height_shift_range=4,  # randomly shift images vertically (20% of the height)
     fill_mode='reflect',  # reflect padding mode
-  ) if not fast else ImageDataGenerator())
+  )
 
   train_generator = datagen.flow(*ds, batch_size=(128 if not fast else 64))
 
@@ -409,8 +409,8 @@ def getPredictions(ds, model, augmentationForModification):
     images = ds[0]
     datagen = ImageDataGenerator(
       horizontal_flip=True,  # random horizontal flip
-      width_shift_range=0.2,  # randomly shift images horizontally (20% of the width)
-      height_shift_range=0.2,  # randomly shift images vertically (20% of the height)
+      width_shift_range=4,  # randomly shift images horizontally (20% of the width)
+      height_shift_range=4,  # randomly shift images vertically (20% of the height)
       fill_mode='reflect',  # reflect padding mode
     )
 
@@ -518,7 +518,7 @@ def modifySet(set2, predictions, truelabels, augmentationForModification, thresh
       newlabel = np.argmax(predictions[i])
       removalCondition = maxscore/thresh > scoreatindex and maxscore > thesh1
     else:
-      conditionsMetCount = 0
+      """conditionsMetCount = 0
 
       for predictionset in predictions:
         idealindex = set2[1][i]
@@ -528,13 +528,14 @@ def modifySet(set2, predictions, truelabels, augmentationForModification, thresh
         if maxscore/thresh > scoreatindex and maxscore > thesh1:
           conditionsMetCount += 1
       
-      removalCondition = conditionsMetCount > augmentationForModification*0.7
+      removalCondition = conditionsMetCount > augmentationForModification*0.7"""
 
       maxlabels = []
       for predictionset in predictions:
         maxlabels.append(np.argmax(predictionset[i]))
       
       newlabel = most_common(maxlabels)
+      removalCondition = (set2[1][i] != newlabel)
 
     if removalCondition:
       if set2[1][i] == truelabels[i][0]:
