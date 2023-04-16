@@ -127,10 +127,12 @@ class CustomCallback(keras.callbacks.Callback):
         loading_bar.display()
 
 class LoadingBar():
-  def __init__(self, verbose):
+  def __init__(self, verbose, main_epochs, train_epochs):
     self.structure = "| Elapsed: {} | Epoch {} | {} half epoch | Model training progress: {} {}/{} | Validation accuracy: {}% | Validation loss: {} | Dataset modification progress: {} {}/{} | Dataset half accuracy before half epoch: {}% | Dataset half accuracy after half epoch: {}% | Correct relabelling: {}% | Incorrect relabelling: {}% | Neutral relabelling: {}% | Total dataset accuracy: {}% |"
     self.out = display(display_id=True)
     self.verbose = verbose
+    self.main_epochs = main_epochs
+    self.train_epochs = train_epochs
   
   def display(self, save=False):
 
@@ -139,12 +141,12 @@ class LoadingBar():
 
     time_elapsed = str(datetime.timedelta(seconds=int(time.time()-epochtime)))
 
-    current_epoch = str((epoch + 1)).rjust(len(str(MAIN_EPOCHS)))
+    current_epoch = str((epoch + 1)).rjust(len(str(self.main_epochs)))
     half_epoch = " First" if half == 0 else "Second"
 
-    progress_dash_train = "=" * train_epoch + "." * (TRAIN_EPOCHS - train_epoch)
-    epoch_train = str(train_epoch).rjust(len(str(TRAIN_EPOCHS)))
-    epoch_train_total = TRAIN_EPOCHS
+    progress_dash_train = "=" * train_epoch + "." * (self.train_epochs - train_epoch)
+    epoch_train = str(train_epoch).rjust(len(str(self.train_epochs)))
+    epoch_train_total = self.train_epochs
 
     val_accuracy_str = str(format(val_accuracy, ".2f") if val_accuracy != "?" else "?").rjust(5)
     val_loss_str = str(format(val_loss, ".3f") if val_loss != "?" else "?").rjust(5)
@@ -637,7 +639,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentati
 
   global epoch, model, predictions, truelabels, set1, set2, half, loading_bar, epochtime, train_epoch, set1_ds, set2_ds, val_ds, val_accuracy, val_loss, dataset_modification_progress, dataset_accuracy_before, dataset_accuracy_after, accuracy_increase, accuracy_decrease, accuracy_not_changed, total_accuracy
 
-  loading_bar = LoadingBar(verbose)
+  loading_bar = LoadingBar(verbose, main_epochs=epochs, train_epochs=subEpochs)
 
   num_classes = 10
 
