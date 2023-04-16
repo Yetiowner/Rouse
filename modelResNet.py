@@ -15,6 +15,9 @@ def lq_loss(y_true, y_pred, q=0.4):
 
 def createModel(inputshape = (32, 32, 3), outputclasses = 10, decay = 0.0001, lr = 0.01, momentum = 0.9, lq=0.4):
 
+
+  print("Q: ", lq)
+
   inputs = Input(shape=inputshape)
   x = BatchNormalization()(inputs)
   x = Activation('relu')(x)
