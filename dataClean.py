@@ -379,7 +379,7 @@ def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True, q 
   if loadingBar:
     callbacks.append(CustomCallback())
 
-  model.fit(train_generator, validation_data=val_ds, epochs=(TRAIN_EPOCHS if not epochcount else epochcount), callbacks=callbacks, verbose=1)#, validation_data=val_ds)
+  model.fit(train_generator, validation_data=val_ds, epochs=epochcount, callbacks=callbacks, verbose=1)#, validation_data=val_ds)
   model.load_weights(checkpoint_path)
   return model
 
@@ -633,7 +633,7 @@ def getValAccuracy(x_train, y_train, x_test, y_test, q = 0.4):
   val_accuracy, val_loss = getAccuracy(val_imagesEncoded, model)
   return val_accuracy, val_loss
 
-def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentationForModification=-1, saveOtherPartBeforeChanges = True):
+def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentationForModification=-1, saveOtherPartBeforeChanges = True, subEpochs = 41, subQValue = 0.4):
 
   global epoch, model, predictions, truelabels, set1, set2, half, loading_bar, epochtime, train_epoch, set1_ds, set2_ds, val_ds, val_accuracy, val_loss, dataset_modification_progress, dataset_accuracy_before, dataset_accuracy_after, accuracy_increase, accuracy_decrease, accuracy_not_changed, total_accuracy
 
@@ -689,7 +689,7 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentati
 
       loading_bar.display()
 
-      model = trainModel(set1Encoded, val_imagesEncoded)
+      model = trainModel(set1Encoded, val_imagesEncoded, q=subQValue, epochcount=subEpochs)
 
 
       val_accuracy, val_loss = getAccuracy(val_imagesEncoded, model)
