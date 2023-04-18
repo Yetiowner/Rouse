@@ -209,6 +209,7 @@ class PytorchWithTensorflowCapabilities:
       
       imagetensor = torch.from_numpy(images)
       imagetensor = imagetensor.permute(0, 3, 1, 2)
+      imagetensor = imagetensor.type(torch.cuda.FloatTensor)
 
       self.model.eval()
 
