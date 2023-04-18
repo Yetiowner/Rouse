@@ -31,7 +31,7 @@ from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.losses import categorical_crossentropy
 from keras.preprocessing import image
-from GCE import train_main, PytorchWithTensorflowCapabilities
+from Rouse.GCE import train_main, PytorchWithTensorflowCapabilities
 try:
   from google.colab.patches import cv2_imshow
 except:
@@ -625,9 +625,9 @@ def swapSets(set1, set2):
   set1, set2 = set2, set1
   return set1, set2
 
-def getValAccuracy(x_train, y_train, x_test, y_test, q = 0.4):
+def getValAccuracy(x_train, y_train, x_test, y_test, q = 0.4, epochs = 120):
   train_imagesEncoded, val_imagesEncoded = convertToUseful(x_train, y_train, x_test, y_test)
-  model = trainModel(train_imagesEncoded, val_imagesEncoded, epochcount=120, loadingBar=False, fast=False, q = q)
+  model = trainModel(train_imagesEncoded, val_imagesEncoded, epochcount=epochs, loadingBar=False, fast=False, q = q)
   val_accuracy, val_loss = getAccuracy(val_imagesEncoded, model)
   return val_accuracy, val_loss
 
