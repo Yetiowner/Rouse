@@ -208,6 +208,7 @@ class PytorchWithTensorflowCapabilities:
     def predict(self, images, softmax = True):
       
       imagetensor = torch.from_numpy(images)
+      imagetensor = imagetensor.permute(0, 3, 1, 2)
 
       self.model.eval()
 
