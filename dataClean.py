@@ -31,6 +31,7 @@ from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.losses import categorical_crossentropy
 from keras.preprocessing import image
+from GCE import train_main, PytorchWithTensorflowCapabilities
 try:
   from google.colab.patches import cv2_imshow
 except:
@@ -185,6 +186,10 @@ class Image():
     self.image = image
     self.filename = filename
 
+def loadingBarEpochCallback(epoch):
+  global train_Epoch
+  train_epoch = epoch + 1
+  loading_bar.display()
 
 def scheduler(epoch, lr):
     if epoch == 40 or epoch == 80:
@@ -194,19 +199,8 @@ def scheduler(epoch, lr):
 
 # ResNet34 architecture
 def convertToUseful(x_train, y_train, x_test, y_test):
-  mean_image = np.mean(x_train, axis=0)
-
-  # Subtract the mean from the training and test sets
-  x_train = x_train.astype(np.float32) - mean_image.astype(np.float32)
-  x_test = x_test.astype(np.float32) - mean_image.astype(np.float32)
-
-  # Data normalization
-  x_train = x_train.astype('float32') / 255.0
-  x_test = x_test.astype('float32') / 255.0
-
-  # One-hot encoding of labels
-  y_train = tf.keras.utils.to_categorical(y_train, num_classes=10)
-  y_test = tf.keras.utils.to_categorical(y_test, num_classes=10)
+  y_train = y_train.ravel()
+  y_test = y_test.ravel()
 
   return (x_train, y_train), (x_test, y_test)
 
@@ -340,6 +334,8 @@ def getLabelingAccuracy(labels, oldlabels):
   return num_matches/total*100
 
 def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True, q = None):
+  model = train_main(ds, val_ds, q = q, epochcount = epochcount, num_classes = 10, lr = 0.01, decay = 0.0001)
+  return model
   num_classes = 10
 
   """data_augmentation = keras.Sequential(
@@ -442,7 +438,7 @@ def getPredictions(ds, model, augmentationForModification):
   return predictions
 
 
-def getAccuracy(ds, model):
+def getAccuracy(ds, model: PytorchWithTensorflowCapabilities):
   results = model.evaluate(*ds, batch_size=BATCH_SIZE, verbose=0)
   results[1] *= 100
   results = results[::-1]
