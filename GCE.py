@@ -191,7 +191,7 @@ class PytorchWithTensorflowCapabilities:
       print(y_train.shape)
 
       predicted = torch.from_numpy(self.predict(x_train))
-      actual = F.one_hot(y_train, 10)
+      actual = torch.eye(10)[y_train]
 
       loss = nn.CrossEntropyLoss()(predicted, actual).item()
       true_labels = torch.tensor(true_labels)
