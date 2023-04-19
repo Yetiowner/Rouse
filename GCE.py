@@ -188,10 +188,14 @@ class PytorchWithTensorflowCapabilities:
     def evaluate(self, x_train, y_train, batch_size=128, verbose=0):
       y_train = torch.from_numpy(y_train).long()
 
+      print("foo")
+
       predicted = torch.from_numpy(self.predict(x_train))
       actual = torch.eye(10)[y_train]
 
       loss = nn.CrossEntropyLoss()(predicted, actual).item()
+
+      print("bar")
       #true_labels = torch.tensor(true_labels)
 
       # Get the predicted class labels by taking the argmax along the second axis (axis=1)
@@ -230,6 +234,8 @@ class PytorchWithTensorflowCapabilities:
       
       if softmax:
         outputs = torch.softmax(outputs, dim=1)
+      
+      print(outputs)
       
       return outputs.cpu().numpy()
 
