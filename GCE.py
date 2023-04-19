@@ -207,15 +207,23 @@ class PytorchWithTensorflowCapabilities:
 
     def predict(self, images, softmax = True):
       
-      imagetensor = torch.from_numpy(images)
-      imagetensor = imagetensor.permute(0, 3, 1, 2)
-      imagetensor = imagetensor.type(torch.cuda.FloatTensor)
+      transform_images = transforms.Compose([
+          transforms.ToTensor(),
+          transforms.Normalize((0.491, 0.482, 0.447), (0.247, 0.243, 0.262)),
+      ])
+
+      transformed_images = []
+      for i in range(len(images)):
+          transformed_image = transform_images(images[i])
+          transformed_images.append(transformed_image)
+
+      batch_tensor = torch.stack(transformed_images, dim=0)
 
       self.model.eval()
 
       # Disable gradient computation
       with torch.no_grad():
-        outputs = self.model(imagetensor)
+        outputs = self.model(batch_tensor)
       
       if softmax:
         outputs = torch.softmax(outputs, dim=1)
