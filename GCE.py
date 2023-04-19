@@ -206,7 +206,7 @@ class PytorchWithTensorflowCapabilities:
       # Convert accuracy to a scalar float value
       accuracy = accuracy.item()
 
-      return loss, accuracy
+      return [loss, accuracy]
 
     def predict(self, images, softmax = True):
       
