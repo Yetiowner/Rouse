@@ -186,9 +186,7 @@ class PytorchWithTensorflowCapabilities:
         self.criterion = criterion
     
     def evaluate(self, x_train, y_train, batch_size=128, verbose=0):
-      y_train = torch.from_numpy(y_train)
-      print(y_train)
-      print(y_train.shape)
+      y_train = torch.from_numpy(y_train).long()
 
       predicted = torch.from_numpy(self.predict(x_train))
       actual = torch.eye(10)[y_train]
