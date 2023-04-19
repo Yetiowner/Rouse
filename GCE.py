@@ -1,4 +1,5 @@
-'''ResNet in PyTorch.
+'''
+ResNet in PyTorch.
 For Pre-activation ResNet, see 'preact_resnet.py'.
 Reference:
 [1] Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun
@@ -186,7 +187,7 @@ class PytorchWithTensorflowCapabilities:
     
     def evaluate(self, x_train, y_train, batch_size=128, verbose=0):
       predicted = torch.from_numpy(self.predict(x_train))
-      actual = F.one_hot(y_train, 10)
+      actual = F.one_hot(torch.from_numpy(y_train), 10)
 
       loss = nn.CrossEntropyLoss()(predicted, actual).item()
       true_labels = torch.tensor(true_labels)
