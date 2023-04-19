@@ -185,7 +185,7 @@ class PytorchWithTensorflowCapabilities:
         self.criterion = criterion
     
     def evaluate(self, x_train, y_train, batch_size=128, verbose=0):
-      predicted = torch.stack(self.predict(x_train), dim=0)
+      predicted = torch.from_numpy(self.predict(x_train))
       actual = F.one_hot(y_train, 10)
 
       loss = nn.CrossEntropyLoss()(predicted, actual).item()
