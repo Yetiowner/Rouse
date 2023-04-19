@@ -186,8 +186,12 @@ class PytorchWithTensorflowCapabilities:
         self.criterion = criterion
     
     def evaluate(self, x_train, y_train, batch_size=128, verbose=0):
+      y_train = torch.from_numpy(y_train)
+      print(y_train)
+      print(y_train.shape)
+
       predicted = torch.from_numpy(self.predict(x_train))
-      actual = F.one_hot(torch.from_numpy(y_train), 10)
+      actual = F.one_hot(y_train, 10)
 
       loss = nn.CrossEntropyLoss()(predicted, actual).item()
       true_labels = torch.tensor(true_labels)
