@@ -228,7 +228,7 @@ class PytorchWithTensorflowCapabilities:
       if softmax:
         outputs = torch.softmax(outputs, dim=1)
       
-      return outputs.numpy()
+      return outputs.cpu().numpy()
 
 best_acc = 0
 
