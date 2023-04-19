@@ -192,7 +192,7 @@ class PytorchWithTensorflowCapabilities:
       actual = torch.eye(10)[y_train]
 
       loss = nn.CrossEntropyLoss()(predicted, actual).item()
-      true_labels = torch.tensor(true_labels)
+      #true_labels = torch.tensor(true_labels)
 
       # Get the predicted class labels by taking the argmax along the second axis (axis=1)
       pred_class_labels = torch.argmax(predicted, dim=1)
