@@ -268,10 +268,10 @@ def train_main(train_images, val_images, q = 0.7, epochcount = 50, num_classes =
     test_dataset = MyDataset(x_test, y_test, transform_test)
 
     testloader = torch.utils.data.DataLoader(
-        test_dataset, batch_size=128, shuffle=False, num_workers=2)
+        test_dataset, batch_size=64, shuffle=False, num_workers=2)
 
     trainloader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=128, shuffle=True, num_workers=2)
+        train_dataset, batch_size=64, shuffle=True, num_workers=2)
     # Model
     """if args.resume:
         # Load checkpoint.
