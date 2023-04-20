@@ -214,6 +214,8 @@ class PytorchWithTensorflowCapabilities:
 
     def predict(self, images, softmax = True):
       
+      print(images)
+      
       transform_images = transforms.Compose([
           transforms.ToTensor(),
           transforms.Normalize((0.491, 0.482, 0.447), (0.247, 0.243, 0.262)),
