@@ -335,6 +335,8 @@ def train_main(train_images, val_images, q = 0.7, epochcount = 50, num_classes =
 
         for epoch_callback in epoch_callbacks:
           epoch_callback(epoch)
+    
+    torch.cuda.empty_cache()
   
     return PytorchWithTensorflowCapabilities(net, criterion)
 
