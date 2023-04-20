@@ -214,8 +214,11 @@ class PytorchWithTensorflowCapabilities:
 
     def predict(self, images, softmax = True):
       
-      print("images: ")
-      print(images)
+    
+      images = images.astype(np.uint8)
+
+      #print("images: ")
+      #print(images)
       
       transform_images = transforms.Compose([
           transforms.ToTensor(),
@@ -229,8 +232,8 @@ class PytorchWithTensorflowCapabilities:
 
       batch_tensor = torch.stack(transformed_images, dim=0)
 
-      print("New images: ")
-      print(batch_tensor)
+      #print("New images: ")
+      #print(batch_tensor)
 
       self.model.eval()
 
