@@ -226,6 +226,8 @@ class PytorchWithTensorflowCapabilities:
 
       batch_tensor = torch.stack(transformed_images, dim=0)
 
+      print(batch_tensor)
+
       self.model.eval()
 
       # Disable gradient computation
