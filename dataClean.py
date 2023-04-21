@@ -416,7 +416,6 @@ def getPredictions(ds, model, augmentationForModification):
       horizontal_flip=True, # flip images horizontally
       fill_mode='reflect', # fill mode for padding, uses reflection
       brightness_range=(0.9, 1.1), # randomly adjust brightness between 0.9 and 1.1
-      rescale=1./255 # rescale pixel values to range [0, 1]
   )
 
     n = augmentationForModification
