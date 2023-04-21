@@ -232,6 +232,9 @@ class PytorchWithTensorflowCapabilities:
 
       batch_tensor = torch.stack(transformed_images, dim=0)
 
+      if torch.cuda.is_available():
+        batch_tensor = batch_tensor.cuda()
+
       #print("New images: ")
       #print(batch_tensor)
 
@@ -244,7 +247,7 @@ class PytorchWithTensorflowCapabilities:
       if softmax:
         outputs = torch.softmax(outputs, dim=1)
       
-      print(outputs)
+      #print(outputs)
 
       outputs = outputs.cpu().numpy()
       torch.cuda.empty_cache()
