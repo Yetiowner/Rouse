@@ -47,6 +47,8 @@ SECONDARY_EPOCHS = 5
 MAIN_EPOCHS = 4
 NAMES = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb=512'
+
 """if "display" not in globals():
   def display(*args, **kwargs):
     if len(args) == 0:

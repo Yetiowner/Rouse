@@ -245,8 +245,11 @@ class PytorchWithTensorflowCapabilities:
         outputs = torch.softmax(outputs, dim=1)
       
       print(outputs)
+
+      outputs = outputs.cpu().numpy()
+      torch.cuda.empty_cache()
       
-      return outputs.cpu().numpy()
+      return outputs
 
 best_acc = 0
 
