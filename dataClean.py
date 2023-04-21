@@ -406,11 +406,16 @@ def getPredictions(ds, model, augmentationForModification):
   if augmentationForModification != -1:
     images = ds[0]
     datagen = ImageDataGenerator(
-      horizontal_flip=True,  # random horizontal flip
-      width_shift_range=4,  # randomly shift images horizontally (20% of the width)
-      height_shift_range=4,  # randomly shift images vertically (20% of the height)
-      fill_mode='reflect',  # reflect padding mode
-    )
+      rotation_range=15, # rotate images randomly by 15 degrees
+      width_shift_range=0.15, # shift images horizontally by 10% of total width
+      height_shift_range=0.15, # shift images vertically by 10% of total height
+      shear_range=0.1, # apply shear transformation with intensity of 10%
+      zoom_range=0.1, # zoom images randomly by 10%
+      horizontal_flip=True, # flip images horizontally
+      fill_mode='reflect', # fill mode for padding, uses reflection
+      brightness_range=(0.9, 1.1), # randomly adjust brightness between 0.9 and 1.1
+      rescale=1./255 # rescale pixel values to range [0, 1]
+  )
 
     n = augmentationForModification
 
