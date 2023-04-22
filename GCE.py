@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 import numpy as np
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, TensorDataset, DataLoader
 
 import torch
 import torch.nn as nn
@@ -232,7 +232,10 @@ class PytorchWithTensorflowCapabilities:
 
       batch_tensor = torch.stack(transformed_images, dim=0)
 
-      print(batch_tensor.shape)
+      dataset = TensorDataset(batch_tensor)
+
+      batch_size = 32
+      data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
       if torch.cuda.is_available():
         batch_tensor = batch_tensor.cuda()
@@ -242,9 +245,26 @@ class PytorchWithTensorflowCapabilities:
 
       self.model.eval()
 
+      print(data_loader)
+
       # Disable gradient computation
+      predictions = []
       with torch.no_grad():
-        outputs = self.model(batch_tensor)
+        for images in data_loader:
+            # Move images to device (e.g., GPU)
+            images = images[0]
+            
+            # Forward pass to get predicted outputs
+            outputs = self.model(images)
+            
+            # Append or concatenate the predicted outputs to a list or tensor
+            predictions.append(outputs)
+
+      predictions = torch.cat(predictions, dim=0)
+
+      print(predictions.shape)
+
+      outputs = predictions
       
       if softmax:
         outputs = torch.softmax(outputs, dim=1)
