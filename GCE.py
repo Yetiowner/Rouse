@@ -225,14 +225,8 @@ class PytorchWithTensorflowCapabilities:
           transforms.Normalize((0.491, 0.482, 0.447), (0.247, 0.243, 0.262)),
       ])
 
-      transformed_images = []
-      for i in range(len(images)):
-          transformed_image = transform_images(images[i])
-          transformed_images.append(transformed_image)
 
-      batch_tensor = torch.stack(transformed_images, dim=0)
-
-      dataset = TensorDataset(batch_tensor)
+      dataset = MyDataset(images, None, transform_images)
 
       batch_size = 32
       data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
