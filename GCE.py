@@ -231,9 +231,6 @@ class PytorchWithTensorflowCapabilities:
       batch_size = 32
       data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
-      if torch.cuda.is_available():
-        batch_tensor = batch_tensor.cuda()
-
       #print("New images: ")
       #print(batch_tensor)
 
