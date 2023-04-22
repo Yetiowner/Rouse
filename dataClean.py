@@ -424,12 +424,14 @@ def getPredictions(ds, model, augmentationForModification):
     augmented_images = []
 
     # Generate n versions of the images array
+    print(1)
     for i in range(n):
         # Generate random variations of the images using datagen.flow()
         batch = datagen.flow(images, batch_size=len(images), shuffle=False).next()
         # Add the generated variations to the list
         augmented_images.append(batch)
 
+    print(2)
     """for i in range(50):
       index = random.randint(0, len(images)-1)
       for j in range(augmentationForModification):
@@ -438,6 +440,8 @@ def getPredictions(ds, model, augmentationForModification):
     predictions = []
     for i in augmented_images:
       predictions.append(model.predict(i))
+    
+    print(3)
 
   else:
     predictions = model.predict(ds[0])
