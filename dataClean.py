@@ -404,14 +404,14 @@ def load_image(img_path, show=False):
 
     return img_tensor
 
-def apply_data_augmentation(images, datagen, batch_size=32):
+def apply_data_augmentation(images, datagen, batch_size=64):
     """
     Applies data augmentation on a numpy array of images using an ImageDataGenerator with a specified batch size.
 
     Args:
         images (numpy array): Input numpy array of images with shape (num_samples, height, width, channels).
         datagen (ImageDataGenerator): Instance of ImageDataGenerator with desired data augmentation settings.
-        batch_size (int): Batch size for generating augmented images. Default is 32.
+        batch_size (int): Batch size for generating augmented images. Default is 64.
 
     Returns:
         numpy array: Processed images with the same shape as the original images.

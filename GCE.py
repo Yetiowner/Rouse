@@ -232,6 +232,8 @@ class PytorchWithTensorflowCapabilities:
 
       batch_tensor = torch.stack(transformed_images, dim=0)
 
+      print(batch_tensor.shape)
+
       if torch.cuda.is_available():
         batch_tensor = batch_tensor.cuda()
 
