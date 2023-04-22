@@ -404,6 +404,34 @@ def load_image(img_path, show=False):
 
     return img_tensor
 
+def apply_data_augmentation(images, datagen, batch_size=32):
+    """
+    Applies data augmentation on a numpy array of images using an ImageDataGenerator with a specified batch size.
+
+    Args:
+        images (numpy array): Input numpy array of images with shape (num_samples, height, width, channels).
+        datagen (ImageDataGenerator): Instance of ImageDataGenerator with desired data augmentation settings.
+        batch_size (int): Batch size for generating augmented images. Default is 32.
+
+    Returns:
+        numpy array: Processed images with the same shape as the original images.
+    """
+    # Create an iterator to generate batches of images with the specified batch size
+    image_iterator = datagen.flow(images, batch_size=batch_size, shuffle=False)
+
+    # Initialize an empty numpy array to store the augmented images
+    augmented_images = np.empty_like(images)
+
+    # Iterate over the image_iterator to get batches of augmented images
+    for i in range(len(images) // batch_size + 1):
+        # Get the batch of augmented images
+        batch = image_iterator.next()
+
+        # Extract the augmented images from the batch and store them in the empty array
+        augmented_images[i * batch_size:(i + 1) * batch_size] = batch
+
+    return augmented_images
+
 def getPredictions(ds, model, augmentationForModification):
   if augmentationForModification != -1:
     images = ds[0]
@@ -427,7 +455,8 @@ def getPredictions(ds, model, augmentationForModification):
     print(1)
     for i in range(n):
         # Generate random variations of the images using datagen.flow()
-        batch = datagen.flow(images, batch_size=len(images), shuffle=False).next()
+        batch = apply_data_augmentation(images, datagen)
+        #batch = datagen.flow(images, batch_size=len(images), shuffle=False).next()
         # Add the generated variations to the list
         augmented_images.append(batch)
 
