@@ -226,7 +226,7 @@ class PytorchWithTensorflowCapabilities:
       ])
 
 
-      dataset = MyDataset(images, None, transform_images)
+      dataset = MyDataset(images, images, transform_images)
 
       batch_size = 32
       data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
@@ -242,7 +242,6 @@ class PytorchWithTensorflowCapabilities:
       predictions = []
       with torch.no_grad():
         for images in data_loader:
-            # Move images to device (e.g., GPU)
             images = images[0]
             
             # Forward pass to get predicted outputs
