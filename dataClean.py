@@ -628,7 +628,7 @@ def getValAccuracy(x_train, y_train, x_test, y_test, q = 0.4, epochs = 120):
   val_accuracy, val_loss = getAccuracy(val_imagesEncoded, model)
   return val_accuracy, val_loss
 
-def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentationForModification=-1, saveOtherPartBeforeChanges = True, subEpochs = 41, subQValue = 0.4):
+def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentationForModification=-1, saveOtherPartBeforeChanges = True, subEpochs = 41, subQValue = 0.4, monoepoch = False):
 
   global epoch, model, predictions, truelabels, set1, set2, half, loading_bar, epochtime, train_epoch, set1_ds, set2_ds, val_ds, val_accuracy, val_loss, dataset_modification_progress, dataset_accuracy_before, dataset_accuracy_after, accuracy_increase, accuracy_decrease, accuracy_not_changed, total_accuracy
 
@@ -653,7 +653,12 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentati
   showNoiseMatrix(y_train, y_train_old, title="Noise distribution matrix on total dataset at the start")
 
   for epoch in range(epochs):
-    set1, set2 = splitBuildingSet(x_train, y_train, y_train_old, 0.5)
+    if not monoepoch:
+      set1, set2 = splitBuildingSet(x_train, y_train, y_train_old, 0.5)
+    else:
+      ds = [x_train, y_train, y_train_old]
+      set1 = copy.deepcopy(ds)
+      set2 = copy.deepcopy(ds)
 
     settotrainon = set1
 
@@ -716,8 +721,12 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentati
       if half == 0:
         set1, set2 = set2, set1
       
-      total_accuracy = getLabelingAccuracy(np.concatenate([set1[1], set2[1]], axis=0), np.concatenate([set1[2], set2[2]], axis=0))
-      loading_bar.display(save=True)
+      if monoepoch:
+        total_accuracy = getLabelingAccuracy(set1[1], set1[2])
+        loading_bar.display(save=True)
+      else:
+        total_accuracy = getLabelingAccuracy(np.concatenate([set1[1], set2[1]], axis=0), np.concatenate([set1[2], set2[2]], axis=0))
+        loading_bar.display(save=True)
 
 
       val_accuracy_list.append(val_accuracy)
@@ -729,10 +738,18 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentati
       accuracy_not_changed_list.append(accuracy_not_changed)
       total_accuracy_list.append(total_accuracy)
 
+      if monoepoch:
+        break
 
-    x_train = np.concatenate([set1[0], set2[0]], axis=0)
-    y_train = np.concatenate([set1[1], set2[1]], axis=0)
-    y_train_old = np.concatenate([set1[2], set2[2]], axis=0)
+
+    if monoepoch:
+      x_train = set1[0]
+      y_train = set1[1]
+      y_train_old = set1[2]
+    else:
+      x_train = np.concatenate([set1[0], set2[0]], axis=0)
+      y_train = np.concatenate([set1[1], set2[1]], axis=0)
+      y_train_old = np.concatenate([set1[2], set2[2]], axis=0)
   
   showNoiseMatrix(y_train, y_train_old, title="Noise distribution matrix on total dataset")
 
