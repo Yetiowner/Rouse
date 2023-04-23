@@ -562,7 +562,7 @@ def modifySet(set2, predictions, truelabels, augmentationForModification, thresh
       
       newlabel = most_common(maxlabels)
 
-      removalCondition = (maxlabels.count(newlabel) > augmentationForModification*0.8) and newlabel != set2[1][i]
+      removalCondition = (maxlabels.count(newlabel) > augmentationForModification*0.7) and newlabel != set2[1][i]
       #removalCondition = (set2[1][i] != newlabel)
 
     if removalCondition:
