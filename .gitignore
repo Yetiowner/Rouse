@@ -1,5 +1,5 @@
-flowers/
-*.zip
-mnist/
+cifar-10-python.tar.gz
+cifar-10-batches-py/
 dataset/
-training_1/
+set1/
+__pycache__
