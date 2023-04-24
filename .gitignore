@@ -5,3 +5,5 @@ set1/
 __pycache__
 flowers/
 mnist/
+dataset.zip
+mnist.zip
