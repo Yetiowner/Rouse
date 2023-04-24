@@ -31,6 +31,7 @@ from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.losses import categorical_crossentropy
 from keras.preprocessing import image
+from Rouse.GCE import train_main, PytorchWithTensorflowCapabilities
 try:
   from google.colab.patches import cv2_imshow
 except:
@@ -45,6 +46,8 @@ TRAIN_EPOCHS = 41
 SECONDARY_EPOCHS = 5
 MAIN_EPOCHS = 4
 NAMES = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:512'
 
 """if "display" not in globals():
   def display(*args, **kwargs):
@@ -185,6 +188,10 @@ class Image():
     self.image = image
     self.filename = filename
 
+def loadingBarEpochCallback(epoch):
+  global train_Epoch
+  train_epoch = epoch + 1
+  loading_bar.display()
 
 def scheduler(epoch, lr):
     if epoch == 40 or epoch == 80:
@@ -194,19 +201,8 @@ def scheduler(epoch, lr):
 
 # ResNet34 architecture
 def convertToUseful(x_train, y_train, x_test, y_test):
-  mean_image = np.mean(x_train, axis=0)
-
-  # Subtract the mean from the training and test sets
-  x_train = x_train.astype(np.float32) - mean_image.astype(np.float32)
-  x_test = x_test.astype(np.float32) - mean_image.astype(np.float32)
-
-  # Data normalization
-  x_train = x_train.astype('float32') / 255.0
-  x_test = x_test.astype('float32') / 255.0
-
-  # One-hot encoding of labels
-  y_train = tf.keras.utils.to_categorical(y_train, num_classes=10)
-  y_test = tf.keras.utils.to_categorical(y_test, num_classes=10)
+  y_train = y_train.ravel()
+  y_test = y_test.ravel()
 
   return (x_train, y_train), (x_test, y_test)
 
@@ -340,6 +336,8 @@ def getLabelingAccuracy(labels, oldlabels):
   return num_matches/total*100
 
 def trainModel(ds, val_ds, epochcount = None, loadingBar = True, fast = True, q = None):
+  model = train_main(ds, val_ds, q = q, epochcount = epochcount, num_classes = 10, lr = 0.01, decay = 0.0001)
+  return model
   num_classes = 10
 
   """data_augmentation = keras.Sequential(
@@ -406,15 +404,47 @@ def load_image(img_path, show=False):
 
     return img_tensor
 
+def apply_data_augmentation(images, datagen, batch_size=64):
+    """
+    Applies data augmentation on a numpy array of images using an ImageDataGenerator with a specified batch size.
+
+    Args:
+        images (numpy array): Input numpy array of images with shape (num_samples, height, width, channels).
+        datagen (ImageDataGenerator): Instance of ImageDataGenerator with desired data augmentation settings.
+        batch_size (int): Batch size for generating augmented images. Default is 64.
+
+    Returns:
+        numpy array: Processed images with the same shape as the original images.
+    """
+    # Create an iterator to generate batches of images with the specified batch size
+    image_iterator = datagen.flow(images, batch_size=batch_size, shuffle=False)
+
+    # Initialize an empty numpy array to store the augmented images
+    augmented_images = np.empty_like(images)
+
+    # Iterate over the image_iterator to get batches of augmented images
+    for i in range(len(images) // batch_size + 1):
+        # Get the batch of augmented images
+        batch = image_iterator.next()
+
+        # Extract the augmented images from the batch and store them in the empty array
+        augmented_images[i * batch_size:(i + 1) * batch_size] = batch
+
+    return augmented_images
+
 def getPredictions(ds, model, augmentationForModification):
   if augmentationForModification != -1:
     images = ds[0]
     datagen = ImageDataGenerator(
-      horizontal_flip=True,  # random horizontal flip
-      width_shift_range=4,  # randomly shift images horizontally (20% of the width)
-      height_shift_range=4,  # randomly shift images vertically (20% of the height)
-      fill_mode='reflect',  # reflect padding mode
-    )
+      rotation_range=15, # rotate images randomly by 15 degrees
+      width_shift_range=0.15, # shift images horizontally by 10% of total width
+      height_shift_range=0.15, # shift images vertically by 10% of total height
+      shear_range=0.1, # apply shear transformation with intensity of 10%
+      zoom_range=0.1, # zoom images randomly by 10%
+      horizontal_flip=True, # flip images horizontally
+      fill_mode='reflect', # fill mode for padding, uses reflection
+      brightness_range=(0.9, 1.1), # randomly adjust brightness between 0.9 and 1.1
+  )
 
     n = augmentationForModification
 
@@ -422,12 +452,15 @@ def getPredictions(ds, model, augmentationForModification):
     augmented_images = []
 
     # Generate n versions of the images array
+    print(1)
     for i in range(n):
         # Generate random variations of the images using datagen.flow()
-        batch = datagen.flow(images, batch_size=len(images), shuffle=False).next()
+        batch = apply_data_augmentation(images, datagen)
+        #batch = datagen.flow(images, batch_size=len(images), shuffle=False).next()
         # Add the generated variations to the list
         augmented_images.append(batch)
 
+    print(2)
     """for i in range(50):
       index = random.randint(0, len(images)-1)
       for j in range(augmentationForModification):
@@ -436,13 +469,15 @@ def getPredictions(ds, model, augmentationForModification):
     predictions = []
     for i in augmented_images:
       predictions.append(model.predict(i))
+    
+    print(3)
 
   else:
     predictions = model.predict(ds[0])
   return predictions
 
 
-def getAccuracy(ds, model):
+def getAccuracy(ds, model: PytorchWithTensorflowCapabilities):
   results = model.evaluate(*ds, batch_size=BATCH_SIZE, verbose=0)
   results[1] *= 100
   results = results[::-1]
@@ -520,23 +555,14 @@ def modifySet(set2, predictions, truelabels, augmentationForModification, thresh
       newlabel = np.argmax(predictions[i])
       removalCondition = maxscore/thresh > scoreatindex and maxscore > thesh1
     else:
-      conditionsMetCount = 0
-
-      for predictionset in predictions:
-        idealindex = set2[1][i]
-        scoreatindex = predictionset[i][idealindex]
-        scoreatindex = tf.get_static_value(scoreatindex)
-        maxscore = np.max(predictionset[i])
-        if maxscore/thresh > scoreatindex and maxscore > thesh1:
-          conditionsMetCount += 1
-      
-      removalCondition = conditionsMetCount > augmentationForModification*0.7
 
       maxlabels = []
       for predictionset in predictions:
         maxlabels.append(np.argmax(predictionset[i]))
       
       newlabel = most_common(maxlabels)
+
+      removalCondition = (maxlabels.count(newlabel) > augmentationForModification*0.7) and newlabel != set2[1][i]
       #removalCondition = (set2[1][i] != newlabel)
 
     if removalCondition:
@@ -629,13 +655,13 @@ def swapSets(set1, set2):
   set1, set2 = set2, set1
   return set1, set2
 
-def getValAccuracy(x_train, y_train, x_test, y_test, q = 0.4):
+def getValAccuracy(x_train, y_train, x_test, y_test, q = 0.4, epochs = 120):
   train_imagesEncoded, val_imagesEncoded = convertToUseful(x_train, y_train, x_test, y_test)
-  model = trainModel(train_imagesEncoded, val_imagesEncoded, epochcount=120, loadingBar=False, fast=False, q = q)
+  model = trainModel(train_imagesEncoded, val_imagesEncoded, epochcount=epochs, loadingBar=False, fast=False, q = q)
   val_accuracy, val_loss = getAccuracy(val_imagesEncoded, model)
   return val_accuracy, val_loss
 
-def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentationForModification=-1, saveOtherPartBeforeChanges = True, subEpochs = 41, subQValue = 0.4):
+def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentationForModification=-1, saveOtherPartBeforeChanges = True, subEpochs = 41, subQValue = 0.4, monoepoch = False):
 
   global epoch, model, predictions, truelabels, set1, set2, half, loading_bar, epochtime, train_epoch, set1_ds, set2_ds, val_ds, val_accuracy, val_loss, dataset_modification_progress, dataset_accuracy_before, dataset_accuracy_after, accuracy_increase, accuracy_decrease, accuracy_not_changed, total_accuracy
 
@@ -660,7 +686,12 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentati
   showNoiseMatrix(y_train, y_train_old, title="Noise distribution matrix on total dataset at the start")
 
   for epoch in range(epochs):
-    set1, set2 = splitBuildingSet(x_train, y_train, y_train_old, 0.5)
+    if not monoepoch:
+      set1, set2 = splitBuildingSet(x_train, y_train, y_train_old, 0.5)
+    else:
+      ds = [x_train, y_train, y_train_old]
+      set1 = copy.deepcopy(ds)
+      set2 = copy.deepcopy(ds)
 
     settotrainon = set1
 
@@ -723,8 +754,12 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentati
       if half == 0:
         set1, set2 = set2, set1
       
-      total_accuracy = getLabelingAccuracy(np.concatenate([set1[1], set2[1]], axis=0), np.concatenate([set1[2], set2[2]], axis=0))
-      loading_bar.display(save=True)
+      if monoepoch:
+        total_accuracy = getLabelingAccuracy(set1[1], set1[2])
+        loading_bar.display(save=True)
+      else:
+        total_accuracy = getLabelingAccuracy(np.concatenate([set1[1], set2[1]], axis=0), np.concatenate([set1[2], set2[2]], axis=0))
+        loading_bar.display(save=True)
 
 
       val_accuracy_list.append(val_accuracy)
@@ -736,10 +771,18 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentati
       accuracy_not_changed_list.append(accuracy_not_changed)
       total_accuracy_list.append(total_accuracy)
 
+      if monoepoch:
+        break
 
-    x_train = np.concatenate([set1[0], set2[0]], axis=0)
-    y_train = np.concatenate([set1[1], set2[1]], axis=0)
-    y_train_old = np.concatenate([set1[2], set2[2]], axis=0)
+
+    if monoepoch:
+      x_train = set1[0]
+      y_train = set1[1]
+      y_train_old = set1[2]
+    else:
+      x_train = np.concatenate([set1[0], set2[0]], axis=0)
+      y_train = np.concatenate([set1[1], set2[1]], axis=0)
+      y_train_old = np.concatenate([set1[2], set2[2]], axis=0)
   
   showNoiseMatrix(y_train, y_train_old, title="Noise distribution matrix on total dataset")
 
