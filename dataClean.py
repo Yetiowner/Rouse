@@ -906,4 +906,3 @@ def showAugmentedImages(image: np.array, n, datagen: ImageDataGenerator):
   image = image.reshape((1,) + image.shape)
   for i in range(n):
     cv2_imshow(datagen.flow(image, batch_size=1, shuffle=False).next()[0])
-  plt.show()
