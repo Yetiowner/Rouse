@@ -900,3 +900,12 @@ def showNoiseDifferenceMatrix(noisy_labels, new_noisy_labels, true_labels, new_t
 
   # Show the plot
   plt.show()
+
+def showAugmentedImages(image: np.array, n, datagen: ImageDataGenerator):
+  """ Shows image in a vertical grid of n rows and 1 column"""
+  image = image.reshape((1,) + image.shape)
+  fig, ax = plt.subplots(n, 1, figsize=(10, 10))
+  for i in range(n):
+    ax[i].imshow(datagen.flow(image, batch_size=1, shuffle=False).next())
+    ax[i].axis('off')
+  plt.show()
