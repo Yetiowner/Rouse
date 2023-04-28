@@ -16,6 +16,8 @@ data["Quoted GCE baseline"] = [[0.8762 for i in range(120)], [1 for i in range(1
 # Create a figure and axis
 fig, ax = plt.subplots()
 
+allyvals = []
+
 # Plot each series
 for i, (series_name, series_data) in enumerate(data.items()):
     if series_name in ["Baseline with weak GCE", "Quoted GCE baseline"]:
@@ -28,13 +30,17 @@ for i, (series_name, series_data) in enumerate(data.items()):
     
     x = list(range(1, len(series_data[0]) + 1))  # x-values
     y = [val * 100 for val in series_data[0]]  # y-values multiplied by 100
+    allyvals += y
     ax.plot(x, y, label=label)
+
+def concat(y):
+    print(y)
 
 # Add legend
 ax.legend()
 ax.legend(loc='lower right')
 
-ax.set_yticks(range(0, int(max(y)) + 1, 5))
+ax.set_yticks(range((int(min(allyvals))//5)*5, int(max(allyvals)) + 1, 5))
 ax.set_xticks(range(0, 120, 10))
 
 ax.grid(color='gray', linestyle=':', linewidth=0.5)

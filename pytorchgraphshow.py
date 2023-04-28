@@ -26,7 +26,7 @@ for i, (series_name, series_data) in enumerate(data.items()):
 ax.legend()
 ax.legend(loc='lower right')
 
-ax.set_yticks(range(0, int(max(y)) + 1, 5))
+ax.set_yticks(range((int(min(y))//5)*5, int(max(y)) + 1, 5))
 ax.set_xticks(range(0, 120, 10))
 
 ax.grid(color='gray', linestyle=':', linewidth=0.5)

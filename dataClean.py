@@ -437,10 +437,10 @@ def getPredictions(ds, model, augmentationForModification):
     images = ds[0]
     datagen = ImageDataGenerator(
       rotation_range=15, # rotate images randomly by 15 degrees
-      width_shift_range=0.15, # shift images horizontally by 10% of total width
-      height_shift_range=0.15, # shift images vertically by 10% of total height
-      shear_range=0.1, # apply shear transformation with intensity of 10%
-      zoom_range=0.1, # zoom images randomly by 10%
+      width_shift_range=0.3, # shift images horizontally by 10% of total width
+      height_shift_range=0.3, # shift images vertically by 10% of total height
+      shear_range=0.2, # apply shear transformation with intensity of 10%
+      zoom_range=0.2, # zoom images randomly by 10%
       horizontal_flip=True, # flip images horizontally
       fill_mode='reflect', # fill mode for padding, uses reflection
       brightness_range=(0.9, 1.1), # randomly adjust brightness between 0.9 and 1.1
@@ -527,7 +527,7 @@ def load_datasets():
 
   return set1_ds, set2_ds, val_ds
 
-def modifySet(set2, predictions, truelabels, augmentationForModification, thresh=3, thesh1=0.6):
+def modifySet(set2, predictions, truelabels, augmentationForModification, thresh=3, thesh1=0.6, mu=0.2):
   global dataset_modification_progress
   global accuracy_increase
   global accuracy_decrease
@@ -562,7 +562,7 @@ def modifySet(set2, predictions, truelabels, augmentationForModification, thresh
       
       newlabel = most_common(maxlabels)
 
-      removalCondition = (maxlabels.count(newlabel) > augmentationForModification*0.7) and newlabel != set2[1][i]
+      removalCondition = (maxlabels.count(newlabel) > augmentationForModification*mu) and newlabel != set2[1][i]
       #removalCondition = (set2[1][i] != newlabel)
 
     if removalCondition:
@@ -595,7 +595,7 @@ def modifySet(set2, predictions, truelabels, augmentationForModification, thresh
 
   return set2
 
-def deleteFromSet(set2, predictions, truelabels, augmentationForModification, thresh=2, thesh1=0.6):
+def deleteFromSet(set2, predictions, truelabels, augmentationForModification, thresh=2, thesh1=0.6, mu = 0.2):
   global dataset_modification_progress
   global accuracy_increase
   global accuracy_decrease
@@ -630,7 +630,7 @@ def deleteFromSet(set2, predictions, truelabels, augmentationForModification, th
         if maxscore/thresh > scoreatindex and maxscore > thesh1:
           conditionsMetCount += 1
       
-      removalCondition = conditionsMetCount > augmentationForModification*0.5
+      removalCondition = conditionsMetCount > augmentationForModification*mu
 
     if removalCondition:
       if set2[1][i] == truelabels[i][0]:
@@ -661,7 +661,7 @@ def getValAccuracy(x_train, y_train, x_test, y_test, q = 0.4, epochs = 120):
   val_accuracy, val_loss = getAccuracy(val_imagesEncoded, model)
   return val_accuracy, val_loss
 
-def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentationForModification=-1, saveOtherPartBeforeChanges = True, subEpochs = 41, subQValue = 0.4, monoepoch = False):
+def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentationForModification=-1, saveOtherPartBeforeChanges = True, subEpochs = 41, subQValue = 0.4, monoepoch = False, mu = 0.7):
 
   global epoch, model, predictions, truelabels, set1, set2, half, loading_bar, epochtime, train_epoch, set1_ds, set2_ds, val_ds, val_accuracy, val_loss, dataset_modification_progress, dataset_accuracy_before, dataset_accuracy_after, accuracy_increase, accuracy_decrease, accuracy_not_changed, total_accuracy
 
@@ -736,9 +736,9 @@ def trainEpochs(images, val_images, epochs, verbose=1, mode="modify", augmentati
         settotrainon = copy.deepcopy(set2) # This means that biases aren't fed forward
 
       if mode == "modify":
-        set2 = modifySet(set2, predictions, truelabels, augmentationForModification)
+        set2 = modifySet(set2, predictions, truelabels, augmentationForModification, mu)
       else:
-        set2 = deleteFromSet(set2, predictions, truelabels, augmentationForModification)
+        set2 = deleteFromSet(set2, predictions, truelabels, augmentationForModification, mu)
         truelabels = set2[2]
       
       if not saveOtherPartBeforeChanges:
